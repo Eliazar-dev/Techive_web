@@ -225,7 +225,11 @@ export default function Auth() {
     api('/academy/courses/').then((r) => { const list = (Array.isArray(r) ? r : r.results || []).map((c) => ({ name: c.name, track: c.track, blurb: c.description })); if (list.length) setCourses(list) }).catch(() => {})
   }, [])
 
-  const done = (data, remember = true) => { login(data, remember); nav(data.user.is_staff && next === '/' ? '/admin' : next, { replace: true }) }
+  const done = (data, remember = true) => { 
+    login(data, remember)
+    // Redirect to success screen instead of directly to next page
+    nav('/success', { state: { redirectPath: data.user.is_staff && next === '/' ? '/admin' : next } })
+  }
   const signup = mode === 'signup'
 
   return (

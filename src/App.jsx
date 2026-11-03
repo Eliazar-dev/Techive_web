@@ -14,6 +14,7 @@ const Contact = lazy(() => import('./pages/Contact'))
 const Quote = lazy(() => import('./pages/Quote'))
 const Admin = lazy(() => import('./pages/Admin'))
 const Auth = lazy(() => import('./pages/Auth'))
+const Success = lazy(() => import('./pages/Success'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
     <Suspense fallback={<div className="min-h-screen bg-ink" />}>
       <Routes>
         <Route path="auth" element={<Auth />} />
+        <Route path="success" element={<Success />} />
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="features" element={<Features />} />
