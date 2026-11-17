@@ -9,13 +9,14 @@ import Home from './pages/Home' // eager: first paint
 const Features = lazy(() => import('./pages/Features'))
 const Portfolio = lazy(() => import('./pages/Portfolio'))
 const About = lazy(() => import('./pages/About'))
-const Academy = lazy(() => import('./pages/Academy'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Quote = lazy(() => import('./pages/Quote'))
 const Admin = lazy(() => import('./pages/Admin'))
 const Auth = lazy(() => import('./pages/Auth'))
 const Success = lazy(() => import('./pages/Success'))
 const NotFound = lazy(() => import('./pages/NotFound'))
+
+const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://academy.techiveitsolution.co.ke'
 
 export default function App() {
   return (
@@ -30,7 +31,7 @@ export default function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="portfolio" element={<Portfolio />} />
           <Route path="quote" element={<RequireAuth><Quote /></RequireAuth>} />
-          <Route path="academy" element={<RequireAuth from="academy"><Academy /></RequireAuth>} />
+          <Route path="academy" element={<Navigate to={ACADEMY_URL} replace />} />
           <Route path="admin" element={<Admin />} />
           {/* old links keep working */}
           <Route path="login" element={<Navigate to="/auth" replace />} />

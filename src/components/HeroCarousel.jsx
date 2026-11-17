@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react'
 import { useContent } from '../lib/content'
 
+const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://academy.techiveitsolution.co.ke'
 const INTERVAL = 8000 // ms per slide
 
 export default function HeroCarousel() {
@@ -54,14 +55,14 @@ export default function HeroCarousel() {
             <Link to="/quote" className="btn-grad !px-7 !py-4">Get a Quote <ArrowRight size={18} /></Link>
           </div>
           {/* Academy promo (left) */}
-          <Link to="/academy" className="mt-5 inline-flex max-w-full items-center gap-3 rounded-2xl border border-white/25 bg-white/10 py-2.5 pl-3 pr-4 backdrop-blur-md transition hover:bg-white/20 sm:mt-7">
+          <a href={ACADEMY_URL} className="mt-5 inline-flex max-w-full items-center gap-3 rounded-2xl border border-white/25 bg-white/10 py-2.5 pl-3 pr-4 backdrop-blur-md transition hover:bg-white/20 sm:mt-7">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-grad"><GraduationCap size={22} /></span>
             <span className="min-w-0 text-left">
               <span className="block text-[11px] font-bold uppercase tracking-[.2em] text-brand-cyan">{academyPromo.badge} · Academy</span>
               <span className="block truncate font-display text-sm font-semibold sm:text-base">{academyPromo.text}</span>
             </span>
             <ArrowRight size={18} className="shrink-0" />
-          </Link>
+          </a>
         </div>
       </div>
 

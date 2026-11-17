@@ -6,6 +6,8 @@ import { useAuth } from '../lib/auth'
 import { useContent } from '../lib/content'
 import { Avatar } from './ui'
 
+const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://academy.techiveitsolution.co.ke'
+
 const displayName = (u) => u.first_name || u.email.split('@')[0]
 
 // Far-right profile button: "Login" when signed out, avatar + dropdown when signed in.
@@ -34,7 +36,7 @@ function ProfileMenu() {
       {open && (
         <div className="absolute right-0 mt-2 w-56 animate-pop overflow-hidden rounded-2xl border border-zinc-200 bg-white text-ink shadow-2xl">
           <p className="truncate border-b border-zinc-100 px-4 py-3 text-xs text-zinc-500">{user.email}</p>
-          <Link to="/academy" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-zinc-50"><GraduationCap size={16} />My Academy</Link>
+          <Link to={ACADEMY_URL} onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-zinc-50"><GraduationCap size={16} />My Academy</Link>
           {user.is_staff && <Link to="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-zinc-50"><LayoutDashboard size={16} />Admin dashboard</Link>}
           <button onClick={() => { setOpen(false); logout(); nav2('/') }} className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-zinc-50"><LogOut size={16} />Sign out</button>
         </div>
@@ -93,7 +95,7 @@ function Header() {
             {nav.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => `border-b border-white/10 py-4 font-display text-lg font-bold uppercase tracking-wider ${isActive ? 'text-brand-cyan' : ''}`}>{n.label}</NavLink>
             ))}
-            <Link to="/academy" className="flex items-center gap-2 border-b border-white/10 py-4 text-zinc-300"><GraduationCap size={18} />Academy</Link>
+            <a href={ACADEMY_URL} className="flex items-center gap-2 border-b border-white/10 py-4 text-zinc-300"><GraduationCap size={18} />Academy</a>
             {user?.is_staff && <Link to="/admin" className="py-4 text-brand-cyan">Admin dashboard</Link>}
             {user && <button onClick={logout} className="flex items-center gap-2 py-4 text-left text-zinc-400"><LogOut size={18} />Sign out</button>}
           </nav>
@@ -121,7 +123,7 @@ function Footer() {
         <div>
           <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white">Company</h3>
           <ul className="space-y-2 text-sm">
-            {[['/about', 'About Us'], ['/features', 'Features'], ['/academy', 'Academy'], ['/quote', 'Get a Quote'], ['/contact', 'Contact']].map(([to, l]) => <li key={to}><Link to={to} className="hover:text-white">{l}</Link></li>)}
+            {[['/about', 'About Us'], ['/features', 'Features'], [ACADEMY_URL, 'Academy'], ['/quote', 'Get a Quote'], ['/contact', 'Contact']].map(([to, l]) => <li key={to}><Link to={to} className="hover:text-white">{l}</Link></li>)}
           </ul>
         </div>
         <div>
