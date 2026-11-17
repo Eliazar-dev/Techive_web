@@ -220,7 +220,7 @@ export const DEFAULTS = {
   },
   contact: {
     hero: { eyebrow: 'Contact', title: "Let's talk about your project", text: 'Reach the Techive team by email, phone or WhatsApp, or request a detailed quote.' },
-    email: 'hello@techive.co.ke',
+    email: 'hello@techiveitsolution.co.ke',
     phone: '+254 700 000 000',
     address: 'Upper Hill, Nairobi, Kenya',
     hours: 'Monday to Friday, replies within one business day.',

@@ -44,7 +44,7 @@ PyJWT[crypto]>=2.9
 ~~~~bash
 DEBUG=True
 SECRET_KEY=change-me-to-a-long-random-string
-# Vercel: add your API domain too, e.g. localhost,127.0.0.1,.vercel.app,api.techive.co.ke
+# Vercel: add your API domain too, e.g. localhost,127.0.0.1,.vercel.app,api.techiveitsolution.co.ke
 ALLOWED_HOSTS=localhost,127.0.0.1,.vercel.app
 # Frontend origin(s), comma separated (CORS)
 CORS_ALLOWED_ORIGINS=http://localhost:5173
@@ -70,9 +70,9 @@ EMAIL_PORT=587
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=Techive IT Solutions <no-reply@techive.co.ke>
+DEFAULT_FROM_EMAIL=Techive IT Solutions <no-reply@techiveitsolution.co.ke>
 # Inbox that receives new quote / academy requests
-TEAM_EMAIL=hello@techive.co.ke
+TEAM_EMAIL=hello@techiveitsolution.co.ke
 ~~~~
 
 ### `config/settings.py`  —  REPLACE
@@ -179,8 +179,8 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_TIMEOUT = 10  # never let a slow mail server hang a serverless request
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Techive IT Solutions <no-reply@techive.co.ke>')
-TEAM_EMAIL = env('TEAM_EMAIL', default='hello@techive.co.ke')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Techive IT Solutions <no-reply@techiveitsolution.co.ke>')
+TEAM_EMAIL = env('TEAM_EMAIL', default='hello@techiveitsolution.co.ke')
 
 OTP_TTL_MINUTES = 10
 OTP_MAX_ATTEMPTS = 5

@@ -1,6 +1,6 @@
 # Techive API contract (Django <-> React)
 
-Base URL = `VITE_API_URL` (e.g. `https://api.techive.co.ke/api`). JSON in/out.
+Base URL = `VITE_API_URL` (e.g. `https://api.techiveitsolution.co.ke/api`). JSON in/out.
 Errors: HTTP 4xx with `{ "detail": "human readable message" }` (field errors from DRF look like `{ "message": ["This field is required."] }`).
 Auth header: `Authorization: Bearer <access>` (SimpleJWT, access 30 min, refresh 14 days).
 
