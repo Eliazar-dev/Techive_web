@@ -9,6 +9,7 @@ import Home from './pages/Home' // eager: first paint
 const Features = lazy(() => import('./pages/Features'))
 const Portfolio = lazy(() => import('./pages/Portfolio'))
 const About = lazy(() => import('./pages/About'))
+const Team = lazy(() => import('./pages/Team'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Quote = lazy(() => import('./pages/Quote'))
 const Admin = lazy(() => import('./pages/Admin'))
@@ -28,6 +29,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="features" element={<Features />} />
           <Route path="about" element={<About />} />
+          <Route path="team" element={<Team />} />
           <Route path="contact" element={<Contact />} />
           <Route path="portfolio" element={<Portfolio />} />
           <Route path="quote" element={<RequireAuth><Quote /></RequireAuth>} />

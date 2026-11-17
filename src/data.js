@@ -13,6 +13,7 @@ export const nav = [
   { to: '/', label: 'Home' },
   { to: '/features', label: 'Features' },
   { to: '/about', label: 'About' },
+  { to: '/team', label: 'Our Team' },
   { to: '/contact', label: 'Contact' },
 ]
 
@@ -109,6 +110,12 @@ export const DEFAULTS = {
     till_number: '',
     payment_instructions: '',
     general_rules: '',
+  },
+  team: {
+    hero: { eyebrow: 'Our team', title: 'The people behind Techive', text: 'Meet the team that designs, builds and supports your systems.' },
+    members: [
+      { name: 'Eliazar Odede', role: 'Founder & Lead Developer', bio: '', photo: '', email: '', linkedin: '', twitter: '', order: 1 },
+    ],
   },
   academy_site: {
     hero: {

@@ -5,12 +5,56 @@ import { DEFAULTS, ICONS } from '../data'
 import { mergeContent, clearContentCache } from '../lib/content'
 import { fmt, useList, Pager, Table, Card } from './adminKit'
 
-const PAGES = [['home', 'Home'], ['features', 'Features'], ['about', 'About'], ['contact', 'Contact'], ['academy', 'Academy'], ['academy_site', 'Academy Site']]
+const PAGES = [['home', 'Home'], ['features', 'Features'], ['about', 'About'], ['team', 'Team'], ['contact', 'Contact'], ['academy', 'Academy'], ['academy_site', 'Academy Site']]
 const label = (k) => k.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
 const blankLike = (v) => (typeof v === 'string' ? '' : typeof v === 'number' ? 0 : Array.isArray(v) ? [] : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, blankLike(x)])) : '')
 
+
+// Cloudinary unsigned uploads for member photos (no secret in the frontend).
+const CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+
+function PhotoField({ k, v, set }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const canUpload = Boolean(CLOUD && PRESET)
+  const upload = async (file) => {
+    if (!file) return
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return setErr('Use a JPG, PNG or WebP image.')
+    if (file.size > 3 * 1024 * 1024) return setErr('Image must be under 3 MB.')
+    setBusy(true); setErr('')
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('upload_preset', PRESET)
+      fd.append('folder', 'team')
+      const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method: 'POST', body: fd })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error?.message || 'Upload failed')
+      set(j.secure_url)
+    } catch (e) { setErr(e.message) } finally { setBusy(false) }
+  }
+  return (
+    <div>
+      <span className="block text-sm font-medium capitalize">{label(k)}</span>
+      <div className="mt-1 flex items-center gap-3">
+        {v ? <img src={v} alt="" className="h-14 w-14 rounded-full object-cover ring-1 ring-zinc-200" /> : <span className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-100 text-xs text-zinc-400">No photo</span>}
+        {canUpload && (
+          <label className="btn-light !px-3 !py-1.5 text-xs">
+            {busy ? 'Uploading…' : 'Upload photo'}
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={busy} onChange={(e) => { upload(e.target.files?.[0]); e.target.value = '' }} />
+          </label>
+        )}
+      </div>
+      {err && <p className="mt-1 text-xs text-red-600">{err}</p>}
+      <input className="input mt-2 normal-case" value={v} placeholder="…or paste an image URL" onChange={(e) => set(e.target.value)} />
+    </div>
+  )
+}
+
 // Edits any JSON value: text, lists (add / remove rows) and nested groups.
 function Node({ k, v, set }) {
+  if (typeof v === 'string' && k === 'photo') return <PhotoField k={k} v={v} set={set} />
   if (typeof v === 'string')
     return (
       <label className="block text-sm font-medium capitalize">{label(k)}

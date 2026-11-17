@@ -123,7 +123,7 @@ function Footer() {
         <div>
           <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white">Company</h3>
           <ul className="space-y-2 text-sm">
-            {[['/about', 'About Us'], ['/features', 'Features'], [ACADEMY_URL, 'Academy'], ['/quote', 'Get a Quote'], ['/contact', 'Contact']].map(([to, l]) => <li key={to}><Link to={to} className="hover:text-white">{l}</Link></li>)}
+            {[['/about', 'About Us'], ['/team', 'Our Team'], ['/features', 'Features'], [ACADEMY_URL, 'Academy'], ['/quote', 'Get a Quote'], ['/contact', 'Contact']].map(([to, l]) => <li key={to}><Link to={to} className="hover:text-white">{l}</Link></li>)}
           </ul>
         </div>
         <div>
