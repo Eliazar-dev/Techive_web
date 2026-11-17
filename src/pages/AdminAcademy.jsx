@@ -4,7 +4,7 @@ import { api } from '../lib/api'
 import { fmt, useList, Pager, Table, Card } from './adminKit'
 
 const MODES = { online: 'Online', physical: 'Physical', hybrid: 'Hybrid' }
-const BLANK = { name: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0 }
+const BLANK = { name: '', slug: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', certificate_fee: '', referral_reward: '', quiz_pass_mark: '', project_brief: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0, next_course: '' }
 
 // Create / edit one course
 function CourseForm({ course, onSaved, onCancel }) {
@@ -14,7 +14,7 @@ function CourseForm({ course, onSaved, onCancel }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
   async function save(e) {
     e.preventDefault(); setBusy(true); setErr('')
-    const body = { ...f, price: f.price === '' ? null : Number(f.price), order: Number(f.order) || 0 }
+    const body = { ...f, price: f.price === '' ? null : Number(f.price), certificate_fee: f.certificate_fee === '' ? null : Number(f.certificate_fee), referral_reward: f.referral_reward === '' ? null : Number(f.referral_reward), quiz_pass_mark: f.quiz_pass_mark === '' ? null : Number(f.quiz_pass_mark), order: Number(f.order) || 0, next_course: f.next_course || null }
     try { await api(course?.id ? `/admin/courses/${course.id}/` : '/admin/courses/', { method: course?.id ? 'PATCH' : 'POST', body }); onSaved() }
     catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message); setBusy(false) }
   }
@@ -27,6 +27,12 @@ function CourseForm({ course, onSaved, onCancel }) {
       <label className={L}>Duration (e.g. 6 weeks)<input className="input mt-1" value={f.duration} onChange={set('duration')} /></label>
       <label className={L}>Mode of teaching<select className="input mt-1" value={f.mode} onChange={set('mode')}>{Object.entries(MODES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
       <label className={L}>Price (KSh, blank = not announced)<input type="number" min="0" className="input mt-1" value={f.price} onChange={set('price')} /></label>
+      <label className={L}>Certificate fee (KSh)<input type="number" min="0" className="input mt-1" value={f.certificate_fee} onChange={set('certificate_fee')} /></label>
+      <label className={L}>Referral reward (KSh)<input type="number" min="0" className="input mt-1" value={f.referral_reward} onChange={set('referral_reward')} /></label>
+      <label className={L}>Quiz pass mark (%)<input type="number" min="0" max="100" className="input mt-1" value={f.quiz_pass_mark} onChange={set('quiz_pass_mark')} /></label>
+      <label className={L}>Next course (optional)<input className="input mt-1" value={f.next_course} onChange={set('next_course')} placeholder="Course slug" /></label>
+      <label className={`${L} sm:col-span-2`}>Project brief (shown after course completion)<textarea rows={3} className="input mt-1" value={f.project_brief} onChange={set('project_brief')} /></label>
+      <label className={`${L} sm:col-span-2`}>Slug (for URL, auto-generated if blank)<input className="input mt-1" value={f.slug} onChange={set('slug')} /></label>
       <label className={L}>Tutor<input className="input mt-1" value={f.tutor} onChange={set('tutor')} /></label>
       <label className={`${L} sm:col-span-2`}>Course rules (shown after registering)<textarea rows={3} className="input mt-1" value={f.rules} onChange={set('rules')} /></label>
       <label className={`${L} sm:col-span-2`}>Payment plan description<textarea rows={3} className="input mt-1" value={f.payment_plan} onChange={set('payment_plan')} /></label>

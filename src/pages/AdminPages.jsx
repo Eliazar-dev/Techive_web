@@ -5,7 +5,7 @@ import { DEFAULTS, ICONS } from '../data'
 import { mergeContent, clearContentCache } from '../lib/content'
 import { fmt, useList, Pager, Table, Card } from './adminKit'
 
-const PAGES = [['home', 'Home'], ['features', 'Features'], ['about', 'About'], ['contact', 'Contact'], ['academy', 'Academy']]
+const PAGES = [['home', 'Home'], ['features', 'Features'], ['about', 'About'], ['contact', 'Contact'], ['academy', 'Academy'], ['academy_site', 'Academy Site']]
 const label = (k) => k.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
 const blankLike = (v) => (typeof v === 'string' ? '' : typeof v === 'number' ? 0 : Array.isArray(v) ? [] : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, blankLike(x)])) : '')
 

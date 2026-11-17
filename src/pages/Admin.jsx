@@ -8,6 +8,7 @@ import { useAuth } from '../lib/auth'
 import { STATUSES, pill, fmt, useList, Pager, Table } from './adminKit'
 import AdminAcademy from './AdminAcademy'
 import AdminPages from './AdminPages'
+import AdminContent from './AdminContent'
 
 function Overview() {
   const [s, setS] = useState(null)
@@ -122,7 +123,7 @@ function Simple({ title, path, head, row, extra }) {
   )
 }
 
-const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['students', 'Students'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
+const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['content', 'Course content'], ['students', 'Students'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
 
 export default function Admin() {
   useSEO('Admin')
@@ -152,6 +153,7 @@ export default function Admin() {
           {tab === 'users' && <Simple title="Users" path="/admin/users/" head={['Email', 'Name', 'Role', 'Quotes', 'Joined', 'Last login']}
             row={(u) => <><td className="px-4 py-3 font-medium">{u.email}</td><td className="px-4 py-3">{`${u.first_name} ${u.last_name}`.trim() || '—'}</td><td className="px-4 py-3">{u.is_staff ? 'Staff' : 'Client'}</td><td className="px-4 py-3">{u.quotes}</td><td className="px-4 py-3 text-zinc-500">{fmt(u.date_joined)}</td><td className="px-4 py-3 text-zinc-500">{fmt(u.last_login)}</td></>} />}
           {tab === 'courses' && <AdminAcademy view="courses" />}
+          {tab === 'content' && <AdminContent />}
           {tab === 'students' && <AdminAcademy view="students" />}
           {tab === 'pages' && <AdminPages view="pages" />}
           {tab === 'visitors' && <AdminPages view="visitors" />}
