@@ -1,12 +1,14 @@
 import { PageHero, SectionHead, Reveal, CTA, useSEO } from '../components/ui'
 import { audiences } from '../data'
 import { useContent } from '../lib/content'
+import { BreadcrumbSchema } from '../components/StructuredData'
 
 export default function About() {
-  useSEO('About Us', 'Techive IT Solutions is a technology-driven company turning ideas into practical, reliable and scalable digital solutions.')
+  useSEO('About Us', 'Techive IT Solutions is a technology-driven company turning ideas into practical, reliable and scalable digital solutions.', 'https://techiveitsolution.co.ke/about')
   const { hero, pillars, who, values } = useContent('about')
   return (
     <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://techiveitsolution.co.ke/' }, { name: 'About Us', url: 'https://techiveitsolution.co.ke/about' }]} />
       <PageHero eyebrow={hero.eyebrow} title={hero.title} text={hero.text} />
       <section className="bg-zinc-50 py-16 sm:py-24">
         <div className="container-x grid gap-6 md:grid-cols-3">

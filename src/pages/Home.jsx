@@ -4,14 +4,17 @@ import HeroCarousel from '../components/HeroCarousel'
 import { Reveal, SectionHead, CTA, useSEO } from '../components/ui'
 import { audiences, ICONS } from '../data'
 import { useContent } from '../lib/content'
+import { OrganizationSchema, WebsiteSchema } from '../components/StructuredData'
 
 export default function Home() {
-  useSEO('', 'Techive IT Solutions: websites, apps, custom business systems, payment integration, analytics and SEO for businesses, institutions, ministries and entrepreneurs.')
+  useSEO('Home', 'Techive IT Solutions: websites, apps, custom business systems, payment integration, analytics and SEO for businesses, institutions, ministries and entrepreneurs.', 'https://techiveitsolution.co.ke/')
   const home = useContent('home')
   const { services, solutions, process } = useContent('features')
   const { values } = useContent('about')
   return (
     <>
+      <OrganizationSchema />
+      <WebsiteSchema />
       <HeroCarousel />
 
       {/* Services: 2 across on phones, compact cards */}

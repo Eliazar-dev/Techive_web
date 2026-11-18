@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /learn/
+Disallow: /pay/
+
+Sitemap: https://techiveitsolution.co.ke/sitemap.xml

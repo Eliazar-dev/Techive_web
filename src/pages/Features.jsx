@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import { PageHero, Reveal, SectionHead, CTA, useSEO } from '../components/ui'
 import { ICONS } from '../data'
 import { useContent } from '../lib/content'
+import { BreadcrumbSchema } from '../components/StructuredData'
 
 export default function Features() {
-  useSEO('Features', 'Web development, apps, custom business systems, payment integration, analytics, SEO and ready-to-deploy platforms from Techive.')
+  useSEO('Features', 'Web development, apps, custom business systems, payment integration, analytics, SEO and ready-to-deploy platforms from Techive.', 'https://techiveitsolution.co.ke/features')
   const { hero, services, solutions, process } = useContent('features')
   return (
     <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://techiveitsolution.co.ke/' }, { name: 'Features', url: 'https://techiveitsolution.co.ke/features' }]} />
       <PageHero eyebrow={hero.eyebrow} title={hero.title} text={hero.text} />
 
       <section className="bg-zinc-50 py-16 sm:py-24">

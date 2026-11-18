@@ -99,9 +99,9 @@ export const DEFAULTS = {
   },
   contact: {
     hero: { eyebrow: 'Contact', title: "Let's talk about your project", text: 'Reach the Techive team by email, phone or WhatsApp, or request a detailed quote.' },
-    email: 'hello@techiveitsolution.co.ke',
-    phone: '+254 700 000 000',
-    address: 'Upper Hill, Nairobi, Kenya',
+    email: 'techiveitsolutions.com@gmail.com',
+    phone: '+254 740 492 907',
+    address: 'Thika Town, Kiambu County, Kenya',
     hours: 'Monday to Friday, replies within one business day.',
   },
   academy: {
@@ -150,9 +150,9 @@ export const DEFAULTS = {
       signed_by: '',
     },
     footer: {
-      text: '',
-      email: '',
-      phone: '',
+      text: 'Thika Town, Kiambu County, Kenya',
+      email: 'techiveitsolutions.com@gmail.com',
+      phone: '+254 740 492 907',
     },
   },
 }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import confetti from 'canvas-confetti'
+import { useSEO } from '../components/ui'
 
 export default function Success({ message = "Welcome to Techive!", subtext = "Your account is ready", redirectPath = '/' }) {
+  useSEO('Success', '', undefined, '/logo.png', true)
   const navigate = useNavigate()
   const location = useLocation()
   const [countdown, setCountdown] = useState(3)

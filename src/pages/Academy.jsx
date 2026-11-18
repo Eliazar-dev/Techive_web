@@ -92,7 +92,7 @@ function WaitlistModal({ course, onClose }) {
 }
 
 export default function Academy() {
-  useSEO('Academy', 'Techive Academy: Building with AI and Cybersecurity courses. Register and track your progress.')
+  useSEO('Academy', 'Techive Academy: Building with AI and Cybersecurity courses. Register and track your progress.', 'https://techiveitsolution.co.ke/academy')
   const { user } = useAuth()
   const c = useContent('academy')
   const [courses, setCourses] = useState(null)

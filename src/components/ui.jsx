@@ -15,13 +15,71 @@ export function Reveal({ children, className = '', delay = 0 }) {
   return <div ref={ref} className={`reveal ${className}`} style={{ transitionDelay: `${delay}ms` }}>{children}</div>
 }
 
-// Per-page <title> + description (SPA-friendly; pre-render later for max SEO)
-export function useSEO(title, description) {
+// Per-page <title> + description + canonical + OG tags (SPA-friendly)
+export function useSEO(title, description, canonical, ogImage = '/logo.png', noindex = false) {
   useEffect(() => {
     document.title = title ? `${title} | Techive IT Solutions` : 'Techive IT Solutions — Archiving Innovation. Coding the Future.'
     if (description) document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+
+    // Indexing control
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+    robotsMeta.setAttribute('content', noindex ? 'noindex,nofollow' : 'index,follow')
+    
+    // Canonical URL
+    if (canonical) {
+      let link = document.querySelector('link[rel="canonical"]')
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'canonical'
+        document.head.appendChild(link)
+      }
+      link.href = canonical
+    }
+    
+    // Open Graph tags
+    const ogTags = {
+      'og:title': title ? `${title} | Techive IT Solutions` : 'Techive IT Solutions — Archiving Innovation. Coding the Future.',
+      'og:description': description || 'Techive IT Solutions builds websites, apps, custom business systems, payment integrations, data analytics and SEO for businesses, institutions and ministries.',
+      'og:image': ogImage,
+      'og:url': canonical || window.location.href,
+      'og:type': 'website',
+    }
+    
+    Object.entries(ogTags).forEach(([property, content]) => {
+      let meta = document.querySelector(`meta[property="${property}"]`)
+      if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute('property', property)
+        document.head.appendChild(meta)
+      }
+      meta.setAttribute('content', content)
+    })
+    
+    // Twitter Card tags
+    const twitterTags = {
+      'twitter:card': 'summary_large_image',
+      'twitter:title': ogTags['og:title'],
+      'twitter:description': ogTags['og:description'],
+      'twitter:image': ogTags['og:image'],
+    }
+    
+    Object.entries(twitterTags).forEach(([name, content]) => {
+      let meta = document.querySelector(`meta[name="${name}"]`)
+      if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute('name', name)
+        document.head.appendChild(meta)
+      }
+      meta.setAttribute('content', content)
+    })
+    
     window.scrollTo(0, 0)
-  }, [title, description])
+  }, [title, description, canonical, ogImage, noindex])
 }
 
 export function SectionHead({ eyebrow, title, text, center = true, dark = false }) {

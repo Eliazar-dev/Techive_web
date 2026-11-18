@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check } from 'lucide-react'
 import { PageHero, useSEO } from '../components/ui'
 import { useContent } from '../lib/content'
+import { BreadcrumbSchema } from '../components/StructuredData'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
@@ -9,7 +10,7 @@ const budgets = ['Under KSh 50,000', 'KSh 50,000 – 150,000', 'KSh 150,000 – 
 
 // Route is wrapped in <RequireAuth> (see App.jsx), so `user` always exists here.
 export default function Quote() {
-  useSEO('Get a Quote', 'Request a quote from the Techive team for your website, app or business system.')
+  useSEO('Get a Quote', 'Request a quote from the Techive team for your website, app or business system.', 'https://techiveitsolution.co.ke/quote', '/logo.png', true)
   const { user } = useAuth()
   const { services } = useContent('features')
   const [f, setF] = useState({ name: '', phone: user?.phone || '', service: '', budget: '', message: '' })
@@ -26,6 +27,7 @@ export default function Quote() {
 
   return (
     <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://techiveitsolution.co.ke/' }, { name: 'Get a Quote', url: 'https://techiveitsolution.co.ke/quote' }]} />
       <PageHero eyebrow="Get a Quote" title="Tell us about your project" text="A senior member of the team will reply within one business day." />
       <section className="bg-zinc-50 py-16 sm:py-20">
         <div className="container-x">

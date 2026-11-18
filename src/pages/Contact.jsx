@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Clock, ArrowRight } from 'lucide-react'
 import { PageHero, Reveal, useSEO } from '../components/ui'
 import { useContent } from '../lib/content'
+import { BreadcrumbSchema } from '../components/StructuredData'
 
 export default function Contact() {
-  useSEO('Contact', 'Contact Techive IT Solutions by email, phone or WhatsApp.')
+  useSEO('Contact', 'Contact Techive IT Solutions by email, phone or WhatsApp.', 'https://techiveitsolution.co.ke/contact')
   const c = useContent('contact')
   const items = [
     [Mail, 'Email', c.email, `mailto:${c.email}`],
@@ -14,6 +15,7 @@ export default function Contact() {
   ]
   return (
     <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://techiveitsolution.co.ke/' }, { name: 'Contact', url: 'https://techiveitsolution.co.ke/contact' }]} />
       <PageHero eyebrow={c.hero.eyebrow} title={c.hero.title} text={c.hero.text} />
       <section className="bg-zinc-50 py-16 sm:py-20">
         <div className="container-x grid gap-6 md:grid-cols-2">

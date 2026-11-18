@@ -209,7 +209,8 @@ function SignupFace({ academy, prefill, onDone, onLogin }) {
 }
 
 export default function Auth() {
-  useSEO('Login')
+  useSEO('Login', 'Sign in or create a Techive IT Solutions account.', 'https://techiveitsolution.co.ke/auth', '/logo.png', true)
+  useEffect(() => { document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,nofollow') }, [])
   const { login, user } = useAuth()
   const nav = useNavigate()
   const [qs] = useSearchParams()

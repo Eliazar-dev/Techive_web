@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { PageHero, Reveal, CTA, useSEO } from '../components/ui'
 import { projects } from '../data'
+import { BreadcrumbSchema } from '../components/StructuredData'
 
 const cats = ['All', ...new Set(projects.map((p) => p.cat))]
 
 export default function Portfolio() {
-  useSEO('Portfolio', 'A selection of websites, systems, payment integrations and apps built by Techive IT Solutions.')
+  useSEO('Portfolio', 'A selection of websites, systems, payment integrations and apps built by Techive IT Solutions.', 'https://techiveitsolution.co.ke/portfolio')
   const [cat, setCat] = useState('All')
   const list = projects.filter((p) => cat === 'All' || p.cat === cat)
   return (
     <>
+      <BreadcrumbSchema items={[{ name: 'Home', url: 'https://techiveitsolution.co.ke/' }, { name: 'Portfolio', url: 'https://techiveitsolution.co.ke/portfolio' }]} />
       <PageHero eyebrow="Portfolio" title="Work that solves real problems" text="A selection of the kinds of products we build for our clients." />
       <section className="bg-zinc-50 py-24">
         <div className="container-x">
