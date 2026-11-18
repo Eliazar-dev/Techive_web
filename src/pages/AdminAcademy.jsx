@@ -6,7 +6,6 @@ import { fmt, useList, Pager, Table, Card } from './adminKit'
 const MODES = { online: 'Online', physical: 'Physical', hybrid: 'Hybrid' }
 const BLANK = { name: '', slug: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', certificate_fee: '', referral_reward: '', quiz_pass_mark: '', project_brief: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0, next_course: '' }
 
-// Create / edit one course
 function CourseForm({ course, onSaved, onCancel }) {
   const [f, setF] = useState({ ...BLANK, ...course, price: course?.price ?? '' })
   const [busy, setBusy] = useState(false)
@@ -48,7 +47,7 @@ function CourseForm({ course, onSaved, onCancel }) {
 function Courses() {
   const [page, setPage] = useState(1)
   const [d, load] = useList('/admin/courses/', page)
-  const [edit, setEdit] = useState(null) // null | {} (new) | course
+  const [edit, setEdit] = useState(null)
   const del = async (c) => { if (confirm(`Delete "${c.name}"? Student registrations for it are deleted too.`)) { await api(`/admin/courses/${c.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   return (
     <Card title="Courses" extra={<button onClick={() => setEdit({})} className="btn-dark !px-4 !py-2"><Plus size={16} />New course</button>}>
@@ -94,7 +93,33 @@ function Students() {
     <Card title="Students & progress" extra={<><select value={courseFilter} onChange={e => { setCourseFilter(e.target.value); setPage(1) }} className="mr-3 rounded border px-2 py-1 text-sm"><option value="">All courses</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select><button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button></>}>
       {selected.size > 0 && <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-4 py-2"><span className="text-sm font-semibold">{selected.size} selected</span><button onClick={bulkDelete} disabled={busy} className="text-red-600 text-sm font-semibold">Delete selected</button></div>}
       <Table head={[<label className="flex items-center gap-2"><input type="checkbox" checked={selected.size === d.results.length && d.results.length > 0} onChange={toggleAll} /></label>, 'Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
-        {d.results.flatMap((r) => [<tr key={r.id} className="hover:bg-zinc-50"><td className="px-4 py-3"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleRow(r.id)} /></td><td className="px-4 py-3"><p className="font-semibold">{r.name || '—'}</p><p className="text-xs text-zinc-500">{r.email} {r.phone && `· ${r.phone}`}</p></td><td className="px-4 py-3">{r.course_name}</td><td className="px-4 py-3">{RS[r.status]}</td><td className="px-4 py-3">{r.progress}%</td><td className="px-4 py-3">{PS[r.payment_status]}</td><td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td><td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => delRow(r)} disabled={busy} className="text-red-600"><Trash2 size={16} /></button></td></tr>, open === r.id && (<tr key={`${r.id}e`} className="bg-zinc-50"><td colSpan={8} className="px-4 py-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label><label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label><label className="text-sm font-medium">Payment<select className="input mt-1" value={f.payment_status} onChange={(e) => setF({ ...f, payment_status: e.target.value })}>{Object.entries(PS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label><label className="text-sm font-medium">Payment reference<input className="input mt-1" value={f.payment_ref} onChange={(e) => setF({ ...f, payment_ref: e.target.value })} /></label><label className="text-sm font-medium sm:col-span-2 lg:col-span-4">Note shown to the student<textarea rows={2} className="input mt-1" value={f.progress_note} onChange={(e) => setF({ ...f, progress_note: e.target.value })} /></label></div>{err && <p className="mt-3 text-sm text-red-600">{err}</p>}<button disabled={busy} onClick={() => save(r)} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Save'}</button></td></tr>),])}
+        {d.results.flatMap((r) => [
+          <tr key={r.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleRow(r.id)} /></td>
+            <td className="px-4 py-3"><p className="font-semibold">{r.name || '—'}</p><p className="text-xs text-zinc-500">{r.email} {r.phone && `· ${r.phone}`}</p></td>
+            <td className="px-4 py-3">{r.course_name}</td>
+            <td className="px-4 py-3">{RS[r.status]}</td>
+            <td className="px-4 py-3">{r.progress}%</td>
+            <td className="px-4 py-3">{PS[r.payment_status]}</td>
+            <td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td>
+            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => delRow(r)} disabled={busy} className="text-red-600"><Trash2 size={16} /></button></td>
+          </tr>,
+          open === r.id && (
+            <tr key={`${r.id}e`} className="bg-zinc-50">
+              <td colSpan={8} className="px-4 py-5">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+                  <label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label>
+                  <label className="text-sm font-medium">Payment<select className="input mt-1" value={f.payment_status} onChange={(e) => setF({ ...f, payment_status: e.target.value })}>{Object.entries(PS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+                  <label className="text-sm font-medium">Payment reference<input className="input mt-1" value={f.payment_ref} onChange={(e) => setF({ ...f, payment_ref: e.target.value })} /></label>
+                  <label className="text-sm font-medium sm:col-span-2 lg:col-span-4">Note shown to the student<textarea rows={2} className="input mt-1" value={f.progress_note} onChange={(e) => setF({ ...f, progress_note: e.target.value })} /></label>
+                </div>
+                {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+                <button disabled={busy} onClick={() => save(r)} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Save'}</button>
+              </td>
+            </tr>
+          ),
+        ])}
       </Table>
       <Pager page={page} setPage={setPage} count={d.count} />
     </Card>
