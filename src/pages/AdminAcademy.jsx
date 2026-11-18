@@ -119,7 +119,20 @@ function Sessions() {
   const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
   return (
-    <Card title="Live Sessions">
+    <Card title="Live Sessions" extra={<button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button>}>
+      {showForm && (
+        <div className="border-b border-zinc-200 bg-zinc-50 p-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="text-sm font-medium">Course<select className="input mt-1" value={f.course || ''} onChange={(e) => setF({ ...f, course: e.target.value })}><option value="">Select course</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+            <label className="text-sm font-medium">Title<input className="input mt-1" value={f.title || ''} onChange={(e) => setF({ ...f, title: e.target.value })} /></label>
+            <label className="text-sm font-medium">Date & Time<input type="datetime-local" className="input mt-1" value={f.starts_at || ''} onChange={(e) => setF({ ...f, starts_at: e.target.value })} /></label>
+            <label className="text-sm font-medium">Meet URL<input className="input mt-1" value={f.meet_url || ''} onChange={(e) => setF({ ...f, meet_url: e.target.value })} /></label>
+            <label className="text-sm font-medium sm:col-span-2">Notes<input className="input mt-1" value={f.notes || ''} onChange={(e) => setF({ ...f, notes: e.target.value })} /></label>
+          </div>
+          {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+          <button onClick={add} disabled={busy} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Create session'}</button>
+        </div>
+      )}
       <Table head={['Session', 'Course', 'Date', 'Attendance', 'Check-in Link', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.map(s => (
           <tr key={s.id} className="hover:bg-zinc-50">
