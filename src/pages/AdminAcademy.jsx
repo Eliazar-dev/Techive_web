@@ -106,6 +106,50 @@ function Payments() {
   )
 }
 
+function Sessions() {
+  const [page, setPage] = useState(1)
+  const [d, load] = useList('/admin/sessions/', page)
+  const [courses, setCourses] = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [f, setF] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  useEffect(() => { api('/admin/courses/').then(setCourses).catch(() => setCourses([])) }, [])
+  const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: f }); setShowForm(false); setF({}); load() } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message) } finally { setBusy(false) } }
+  const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
+  const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
+  return (
+    <Card title="Live Sessions" extra={<button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button>}>
+      {showForm && (
+        <div className="border-b border-zinc-200 bg-zinc-50 p-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="text-sm font-medium">Course<select className="input mt-1" value={f.course || ''} onChange={(e) => setF({ ...f, course: e.target.value })}><option value="">Select course</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+            <label className="text-sm font-medium">Title<input className="input mt-1" value={f.title || ''} onChange={(e) => setF({ ...f, title: e.target.value })} /></label>
+            <label className="text-sm font-medium">Date & Time<input type="datetime-local" className="input mt-1" value={f.starts_at || ''} onChange={(e) => setF({ ...f, starts_at: e.target.value })} /></label>
+            <label className="text-sm font-medium">Meet URL<input className="input mt-1" value={f.meet_url || ''} onChange={(e) => setF({ ...f, meet_url: e.target.value })} /></label>
+            <label className="text-sm font-medium sm:col-span-2">Notes<input className="input mt-1" value={f.notes || ''} onChange={(e) => setF({ ...f, notes: e.target.value })} /></label>
+          </div>
+          {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+          <button onClick={add} disabled={busy} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Create session'}</button>
+        </div>
+      )}
+      <Table head={['Session', 'Course', 'Date', 'Attendance', 'Check-in Link', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+        {d.results.map(s => (
+          <tr key={s.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3 font-medium">{s.title}</td>
+            <td className="px-4 py-3">{s.course_name}</td>
+            <td className="px-4 py-3 text-zinc-500">{fmt(s.starts_at)}</td>
+            <td className="px-4 py-3">{s.attendance_count} checked in</td>
+            <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
+            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button></td>
+          </tr>
+        ))}
+      </Table>
+      <Pager page={page} setPage={setPage} count={d.count} />
+    </Card>
+  )
+}
+
 function QuizAttempts() {
   const [page, setPage] = useState(1)
   const [d] = useList('/admin/quiz-attempts/', page)
@@ -127,4 +171,4 @@ function QuizAttempts() {
   )
 }
 
-export default function AdminAcademy({ view }) { return view === 'courses' ? <Courses /> : view === 'payments' ? <Payments /> : view === 'quiz' ? <QuizAttempts /> : <Students /> }
+export default function AdminAcademy({ view }) { return view === 'courses' ? <Courses /> : view === 'payments' ? <Payments /> : view === 'quiz' ? <QuizAttempts /> : view === 'sessions' ? <Sessions /> : <Students /> }
