@@ -73,53 +73,33 @@ const PS = { unpaid: 'Unpaid', partial: 'Part paid', paid: 'Paid' }
 
 function Students() {
   const [page, setPage] = useState(1)
-  const [courseFilter, setCourseFilter] = useState('')
-  const [selected, setSelected] = useState(new Set())
-  const [d, load, setD] = useList('/admin/registrations/', page, courseFilter ? `&course=${courseFilter}` : '')
-  const [courses, setCourses] = useState([])
-  const [busy, setBusy] = useState(false)
+  const [d, load, setD] = useList('/admin/registrations/', page)
   const [open, setOpen] = useState(null)
   const [f, setF] = useState({})
+  const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
-  useEffect(() => { api('/admin/courses/').then(setCourses).catch(() => setCourses([])) }, [])
-  const toggleRow = (id) => { const s = new Set(selected); s.has(id) ? s.delete(id) : s.add(id); setSelected(s) }
-  const toggleAll = () => { if (selected.size === d.results.length) setSelected(new Set()); else setSelected(new Set(d.results.map(r => r.id))) }
-  const delRow = async (r) => { if (!confirm(`Delete this registration?`)) return; setBusy(true); try { await api(`/admin/registrations/${r.id}/delete/`, { method: 'DELETE' }); load() } catch (e) { alert(e.data?.detail || e.message) } finally { setBusy(false) } }
-  const bulkDelete = async () => { if (selected.size === 0) return; if (!confirm(`Delete ${selected.size} registrations?`)) return; setBusy(true); try { await api('/admin/registrations/bulk-delete/', { method: 'POST', body: { ids: Array.from(selected) } }); setSelected(new Set()); load() } catch (e) { alert(e.data?.detail || e.message) } finally { setBusy(false) } }
-  const downloadCSV = async () => { const t = api.tokens.get(); const url = `${import.meta.env.VITE_API_URL}/admin/registrations/export/${courseFilter ? '?course='+courseFilter : ''}`; const res = await fetch(url, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `students-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(u) }
   const toggle = (r) => { setOpen(open === r.id ? null : r.id); setErr(''); setF({ status: r.status, progress: r.progress, progress_note: r.progress_note, payment_status: r.payment_status, payment_ref: r.payment_ref }) }
   async function save(r) { setBusy(true); setErr(''); try { const res = await api(`/admin/registrations/${r.id}/`, { method: 'PATCH', body: { ...f, progress: Number(f.progress) } }); setD((x) => ({ ...x, results: x.results.map((i) => (i.id === r.id ? res : i)) })); setOpen(null) } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message) } finally { setBusy(false) } }
-  if (d.loading) return <Card title="Students & progress"><p className="p-8 text-zinc-500">Loading…</p></Card>
-  if (d.error) return <Card title="Students & progress"><p className="p-8 text-red-600">{d.error}</p></Card>
   return (
-    <Card title="Students & progress" extra={<><select value={courseFilter} onChange={e => { setCourseFilter(e.target.value); setPage(1) }} className="mr-3 rounded border px-2 py-1 text-sm"><option value="">All courses</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select><button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button></>}>
-      {selected.size > 0 && <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-4 py-2"><span className="text-sm font-semibold">{selected.size} selected</span><button onClick={bulkDelete} disabled={busy} className="text-red-600 text-sm font-semibold">Delete selected</button></div>}
-      <Table head={[<label className="flex items-center gap-2"><input type="checkbox" checked={selected.size === d.results.length && d.results.length > 0} onChange={toggleAll} /></label>, 'Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered', '']} loading={false} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+    <Card title="Students & progress">
+      <Table head={['Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.flatMap((r) => [
-          <tr key={r.id} className="hover:bg-zinc-50">
-            <td className="px-4 py-3"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleRow(r.id)} /></td>
+          <tr key={r.id} className="cursor-pointer hover:bg-zinc-50" onClick={() => toggle(r)}>
             <td className="px-4 py-3"><p className="font-semibold">{r.name || '—'}</p><p className="text-xs text-zinc-500">{r.email} {r.phone && `· ${r.phone}`}</p></td>
-            <td className="px-4 py-3">{r.course_name}</td>
-            <td className="px-4 py-3">{RS[r.status]}</td>
-            <td className="px-4 py-3">{r.progress}%</td>
-            <td className="px-4 py-3">{PS[r.payment_status]}</td>
-            <td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td>
-            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => delRow(r)} disabled={busy} className="text-red-600"><Trash2 size={16} /></button></td>
+            <td className="px-4 py-3">{r.course_name}</td><td className="px-4 py-3">{RS[r.status]}</td><td className="px-4 py-3">{r.progress}%</td><td className="px-4 py-3">{PS[r.payment_status]}</td><td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td>
           </tr>,
           open === r.id && (
-            <tr key={`${r.id}e`} className="bg-zinc-50">
-              <td colSpan={8} className="px-4 py-5">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-                  <label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label>
-                  <label className="text-sm font-medium">Payment<select className="input mt-1" value={f.payment_status} onChange={(e) => setF({ ...f, payment_status: e.target.value })}>{Object.entries(PS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-                  <label className="text-sm font-medium">Payment reference<input className="input mt-1" value={f.payment_ref} onChange={(e) => setF({ ...f, payment_ref: e.target.value })} /></label>
-                  <label className="text-sm font-medium sm:col-span-2 lg:col-span-4">Note shown to the student<textarea rows={2} className="input mt-1" value={f.progress_note} onChange={(e) => setF({ ...f, progress_note: e.target.value })} /></label>
-                </div>
-                {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
-                <button disabled={busy} onClick={() => save(r)} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Save'}</button>
-              </td>
-            </tr>
+            <tr key={`${r.id}e`} className="bg-zinc-50"><td colSpan={6} className="px-4 py-5">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+                <label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label>
+                <label className="text-sm font-medium">Payment<select className="input mt-1" value={f.payment_status} onChange={(e) => setF({ ...f, payment_status: e.target.value })}>{Object.entries(PS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+                <label className="text-sm font-medium">Payment reference<input className="input mt-1" value={f.payment_ref} onChange={(e) => setF({ ...f, payment_ref: e.target.value })} /></label>
+                <label className="text-sm font-medium sm:col-span-2 lg:col-span-4">Note shown to the student<textarea rows={2} className="input mt-1" value={f.progress_note} onChange={(e) => setF({ ...f, progress_note: e.target.value })} /></label>
+              </div>
+              {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+              <button disabled={busy} onClick={() => save(r)} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Save'}</button>
+            </td></tr>
           ),
         ])}
       </Table>
