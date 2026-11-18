@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { FileText, Users, GraduationCap, Inbox, Eye, BookOpen, Copy } from 'lucide-react'
+import { FileText, Users, GraduationCap, Inbox, Eye, BookOpen, Copy, Trash2, Download, Check, X } from 'lucide-react'
 import { useSEO } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -123,10 +123,69 @@ function Simple({ title, path, head, row, extra }) {
   )
 }
 
-const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['content', 'Course content'], ['students', 'Students'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
+function UsersTab() {
+  const [page, setPage] = useState(1)
+  const [d, load] = useList('/admin/users/', page)
+  const [busy, setBusy] = useState(false)
+  const del = async (u) => {
+    if (!confirm(`Delete ${u.email}? This cannot be undone.`)) return
+    setBusy(true)
+    try { await api(`/admin/users/${u.id}/`, { method: 'DELETE' }); load() }
+    catch (e) { alert(e.data?.detail || e.message) }
+    finally { setBusy(false) }
+  }
+  const toggleActive = async (u) => {
+    setBusy(true)
+    try { await api(`/admin/users/${u.id}/`, { method: 'PATCH', body: { is_active: !u.is_active } }); load() }
+    catch (e) { alert(e.data?.detail || e.message) }
+    finally { setBusy(false) }
+  }
+  const downloadCSV = async () => {
+    const t = api.tokens.get()
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/export/`, { headers: { Authorization: `Bearer ${t.access}` } })
+    if (!res.ok) { alert('Download failed'); return }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `users-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white">
+      <div className="flex items-center justify-between border-b border-zinc-200 p-4">
+        <h2 className="font-bold">Users</h2>
+        <button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />Download CSV</button>
+      </div>
+      <Table head={['Email', 'Name', 'Role', 'Quotes', 'Joined', 'Last login', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+        {d.results.map((u) => (
+          <tr key={u.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3 font-medium">{u.email}</td>
+            <td className="px-4 py-3">{`${u.first_name} ${u.last_name}`.trim() || '—'}</td>
+            <td className="px-4 py-3">{u.is_staff ? 'Staff' : 'Client'}</td>
+            <td className="px-4 py-3">{u.quotes}</td>
+            <td className="px-4 py-3 text-zinc-500">{fmt(u.date_joined)}</td>
+            <td className="px-4 py-3 text-zinc-500">{fmt(u.last_login)}</td>
+            <td className="whitespace-nowrap px-4 py-3 text-right">
+              <button onClick={() => toggleActive(u)} className="mr-3 text-sm font-semibold underline" title={u.is_active ? 'Deactivate' : 'Reactivate'}>
+                {u.is_active ? <X size={16} /> : <Check size={16} />}
+              </button>
+              <button onClick={() => del(u)} disabled={busy} className="text-red-600" title="Delete"><Trash2 size={16} /></button>
+            </td>
+          </tr>
+        ))}
+      </Table>
+      <Pager page={page} setPage={setPage} count={d.count} />
+    </div>
+  )
+}
+
+const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['content', 'Course content'], ['students', 'Students'], ['payments', 'Payments'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
 
 export default function Admin() {
-  useSEO('Admin')
+  useSEO('Admin', '', 'https://techiveitsolution.co.ke/admin', '/logo.png', true)
+  useEffect(() => { document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,nofollow') }, [])
   const { user, ready } = useAuth()
   const [tab, setTab] = useState('overview')
   if (!ready) return <div className="min-h-screen bg-ink" />
@@ -150,11 +209,11 @@ export default function Admin() {
           </div>
           {tab === 'overview' && <Overview />}
           {tab === 'quotes' && <Quotes />}
-          {tab === 'users' && <Simple title="Users" path="/admin/users/" head={['Email', 'Name', 'Role', 'Quotes', 'Joined', 'Last login']}
-            row={(u) => <><td className="px-4 py-3 font-medium">{u.email}</td><td className="px-4 py-3">{`${u.first_name} ${u.last_name}`.trim() || '—'}</td><td className="px-4 py-3">{u.is_staff ? 'Staff' : 'Client'}</td><td className="px-4 py-3">{u.quotes}</td><td className="px-4 py-3 text-zinc-500">{fmt(u.date_joined)}</td><td className="px-4 py-3 text-zinc-500">{fmt(u.last_login)}</td></>} />}
+          {tab === 'users' && <UsersTab />}
           {tab === 'courses' && <AdminAcademy view="courses" />}
           {tab === 'content' && <AdminContent />}
           {tab === 'students' && <AdminAcademy view="students" />}
+          {tab === 'payments' && <AdminAcademy view="payments" />}
           {tab === 'pages' && <AdminPages view="pages" />}
           {tab === 'visitors' && <AdminPages view="visitors" />}
           {tab === 'waitlist' && <Simple title="Academy waitlist" path="/admin/waitlist/" head={['Email', 'Name', 'Interested in', 'Joined']}
