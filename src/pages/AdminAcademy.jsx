@@ -73,35 +73,19 @@ const PS = { unpaid: 'Unpaid', partial: 'Part paid', paid: 'Paid' }
 
 function Students() {
   const [page, setPage] = useState(1)
-  const [d, load, setD] = useList('/admin/registrations/', page)
-  const [open, setOpen] = useState(null)
-  const [f, setF] = useState({})
+  const [d, load] = useList('/admin/registrations/', page)
   const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState('')
-  const toggle = (r) => { setOpen(open === r.id ? null : r.id); setErr(''); setF({ status: r.status, progress: r.progress, progress_note: r.progress_note, payment_status: r.payment_status, payment_ref: r.payment_ref }) }
-  async function save(r) { setBusy(true); setErr(''); try { const res = await api(`/admin/registrations/${r.id}/`, { method: 'PATCH', body: { ...f, progress: Number(f.progress) } }); setD((x) => ({ ...x, results: x.results.map((i) => (i.id === r.id ? res : i)) })); setOpen(null) } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message) } finally { setBusy(false) } }
+  const delRow = async (r) => { if (!confirm(`Delete ${r.name || r.email}'s registration?`)) return; setBusy(true); try { await api(`/admin/registrations/${r.id}/delete/`, { method: 'DELETE' }); load() } catch (e) { alert(e.data?.detail || e.message) } finally { setBusy(false) } }
   return (
-    <Card title="Students & progress">
-      <Table head={['Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
-        {d.results.flatMap((r) => [
-          <tr key={r.id} className="cursor-pointer hover:bg-zinc-50" onClick={() => toggle(r)}>
+    <Card title="Students">
+      <Table head={['Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+        {d.results.map((r) => (
+          <tr key={r.id} className="hover:bg-zinc-50">
             <td className="px-4 py-3"><p className="font-semibold">{r.name || '—'}</p><p className="text-xs text-zinc-500">{r.email} {r.phone && `· ${r.phone}`}</p></td>
             <td className="px-4 py-3">{r.course_name}</td><td className="px-4 py-3">{RS[r.status]}</td><td className="px-4 py-3">{r.progress}%</td><td className="px-4 py-3">{PS[r.payment_status]}</td><td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td>
-          </tr>,
-          open === r.id && (
-            <tr key={`${r.id}e`} className="bg-zinc-50"><td colSpan={6} className="px-4 py-5">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-                <label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label>
-                <label className="text-sm font-medium">Payment<select className="input mt-1" value={f.payment_status} onChange={(e) => setF({ ...f, payment_status: e.target.value })}>{Object.entries(PS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-                <label className="text-sm font-medium">Payment reference<input className="input mt-1" value={f.payment_ref} onChange={(e) => setF({ ...f, payment_ref: e.target.value })} /></label>
-                <label className="text-sm font-medium sm:col-span-2 lg:col-span-4">Note shown to the student<textarea rows={2} className="input mt-1" value={f.progress_note} onChange={(e) => setF({ ...f, progress_note: e.target.value })} /></label>
-              </div>
-              {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
-              <button disabled={busy} onClick={() => save(r)} className="btn-dark mt-4 !py-2">{busy ? 'Saving…' : 'Save'}</button>
-            </td></tr>
-          ),
-        ])}
+            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => delRow(r)} disabled={busy} className="text-red-600"><Trash2 size={16} /></button></td>
+          </tr>
+        ))}
       </Table>
       <Pager page={page} setPage={setPage} count={d.count} />
     </Card>
