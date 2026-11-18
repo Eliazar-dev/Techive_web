@@ -115,7 +115,7 @@ function Sessions() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   useEffect(() => { api('/admin/courses/').then(setCourses).catch(() => setCourses([])) }, [])
-  const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: f }); setShowForm(false); setF({}); load() } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message) } finally { setBusy(false) } }
+  const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: { ...f, starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null } }); setShowForm(false); setF({}); load() } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message); setBusy(false) } }
   const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
   return (
