@@ -122,4 +122,25 @@ function Payments() {
   )
 }
 
-export default function AdminAcademy({ view }) { return view === 'courses' ? <Courses /> : view === 'payments' ? <Payments /> : <Students /> }
+function QuizAttempts() {
+  const [page, setPage] = useState(1)
+  const [d] = useList('/admin/quiz-attempts/', page)
+  return (
+    <Card title="Quiz Attempts">
+      <Table head={['Student', 'Course', 'Score', 'Result', 'Date']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+        {d.results.map(q => (
+          <tr key={q.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3"><p className="font-semibold">{q.name}</p><p className="text-xs text-zinc-500">{q.email}</p></td>
+            <td className="px-4 py-3">{q.course_name}</td>
+            <td className="px-4 py-3">{q.score}%</td>
+            <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${q.passed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{q.passed ? 'Passed' : 'Failed'}</span></td>
+            <td className="px-4 py-3 text-zinc-500">{fmt(q.created_at)}</td>
+          </tr>
+        ))}
+      </Table>
+      <Pager page={page} setPage={setPage} count={d.count} />
+    </Card>
+  )
+}
+
+export default function AdminAcademy({ view }) { return view === 'courses' ? <Courses /> : view === 'payments' ? <Payments /> : view === 'quiz' ? <QuizAttempts /> : <Students /> }

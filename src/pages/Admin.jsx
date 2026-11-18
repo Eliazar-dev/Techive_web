@@ -181,7 +181,7 @@ function UsersTab() {
   )
 }
 
-const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['content', 'Course content'], ['students', 'Students'], ['payments', 'Payments'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
+const TABS = [['overview', 'Overview'], ['quotes', 'Quotes'], ['users', 'Users'], ['courses', 'Courses'], ['content', 'Course content'], ['students', 'Students'], ['quiz', 'Quiz Attempts'], ['payments', 'Payments'], ['waitlist', 'Waitlist'], ['pages', 'Pages'], ['visitors', 'Visitors']]
 
 export default function Admin() {
   useSEO('Admin', '', 'https://techiveitsolution.co.ke/admin', '/logo.png', true)
@@ -213,6 +213,7 @@ export default function Admin() {
           {tab === 'courses' && <AdminAcademy view="courses" />}
           {tab === 'content' && <AdminContent />}
           {tab === 'students' && <AdminAcademy view="students" />}
+          {tab === 'quiz' && <AdminAcademy view="quiz" />}
           {tab === 'payments' && <AdminAcademy view="payments" />}
           {tab === 'pages' && <AdminPages view="pages" />}
           {tab === 'visitors' && <AdminPages view="visitors" />}
