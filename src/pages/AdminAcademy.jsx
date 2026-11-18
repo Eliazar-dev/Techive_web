@@ -73,29 +73,23 @@ const PS = { unpaid: 'Unpaid', partial: 'Part paid', paid: 'Paid' }
 
 function Students() {
   const [page, setPage] = useState(1)
-  const [courseFilter, setCourseFilter] = useState('')
-  const [d, load, setD] = useList('/admin/registrations/', page, courseFilter ? `&course=${courseFilter}` : '')
-  const [courses, setCourses] = useState([])
+  const [d, load, setD] = useList('/admin/registrations/', page)
   const [open, setOpen] = useState(null)
   const [f, setF] = useState({})
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
-  useEffect(() => { api('/admin/courses/').then(setCourses).catch(() => setCourses([])) }, [])
   const toggle = (r) => { setOpen(open === r.id ? null : r.id); setErr(''); setF({ status: r.status, progress: r.progress, progress_note: r.progress_note, payment_status: r.payment_status, payment_ref: r.payment_ref }) }
   async function save(r) { setBusy(true); setErr(''); try { const res = await api(`/admin/registrations/${r.id}/`, { method: 'PATCH', body: { ...f, progress: Number(f.progress) } }); setD((x) => ({ ...x, results: x.results.map((i) => (i.id === r.id ? res : i)) })); setOpen(null) } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message) } finally { setBusy(false) } }
-  const delRow = async (r) => { if (!confirm(`Delete this registration?`)) return; setBusy(true); try { await api(`/admin/registrations/${r.id}/delete/`, { method: 'DELETE' }); load() } catch (e) { alert(e.data?.detail || e.message) } finally { setBusy(false) } }
-  const downloadCSV = async () => { const t = api.tokens.get(); const url = `${import.meta.env.VITE_API_URL}/admin/registrations/export/${courseFilter ? '?course='+courseFilter : ''}`; const res = await fetch(url, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `students-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(u) }
   return (
-    <Card title="Students & progress" extra={<><select value={courseFilter} onChange={e => { setCourseFilter(e.target.value); setPage(1) }} className="mr-3 rounded border px-2 py-1 text-sm"><option value="">All courses</option>{courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select><button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button></>}>
-      <Table head={['Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+    <Card title="Students & progress">
+      <Table head={['Student', 'Course', 'Status', 'Progress', 'Payment', 'Registered']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.flatMap((r) => [
           <tr key={r.id} className="cursor-pointer hover:bg-zinc-50" onClick={() => toggle(r)}>
             <td className="px-4 py-3"><p className="font-semibold">{r.name || '—'}</p><p className="text-xs text-zinc-500">{r.email} {r.phone && `· ${r.phone}`}</p></td>
             <td className="px-4 py-3">{r.course_name}</td><td className="px-4 py-3">{RS[r.status]}</td><td className="px-4 py-3">{r.progress}%</td><td className="px-4 py-3">{PS[r.payment_status]}</td><td className="px-4 py-3 text-zinc-500">{fmt(r.created_at)}</td>
-            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={(e) => { e.stopPropagation(); delRow(r) }} disabled={busy} className="text-red-600"><Trash2 size={16} /></button></td>
           </tr>,
           open === r.id && (
-            <tr key={`${r.id}e`} className="bg-zinc-50"><td colSpan={7} className="px-4 py-5">
+            <tr key={`${r.id}e`} className="bg-zinc-50"><td colSpan={6} className="px-4 py-5">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <label className="text-sm font-medium">Status<select className="input mt-1" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{Object.entries(RS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
                 <label className="text-sm font-medium">Progress (0-100)<input type="number" min="0" max="100" className="input mt-1" value={f.progress} onChange={(e) => setF({ ...f, progress: e.target.value })} /></label>
