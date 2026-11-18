@@ -34,7 +34,7 @@ export function Pager({ page, setPage, count, size = 50 }) {
 export const Table = ({ head, children, empty, loading, error }) => (
   <div className="overflow-x-auto">
     <table className="w-full min-w-[640px] text-left text-sm">
-      <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500"><tr>{head.map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead>
+      <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500"><tr>{head.map((h, i) => <th key={i} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead>
       <tbody className="divide-y divide-zinc-100">{children}</tbody>
     </table>
     {(loading || error || empty) && <p className={`p-8 text-center text-sm ${error ? 'text-red-600' : 'text-zinc-500'}`}>{error || (loading ? 'Loading…' : 'Nothing here yet.')}</p>}
