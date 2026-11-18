@@ -81,7 +81,7 @@ function Students() {
   const [open, setOpen] = useState(null)
   const [f, setF] = useState({})
   const [err, setErr] = useState('')
-  useEffect(() => { api('/admin/courses/').then(setCourses) }, [])
+  useEffect(() => { api('/admin/courses/').then(setCourses).catch(() => setCourses([])) }, [])
   const toggleRow = (id) => { const s = new Set(selected); s.has(id) ? s.delete(id) : s.add(id); setSelected(s) }
   const toggleAll = () => { if (selected.size === d.results.length) setSelected(new Set()); else setSelected(new Set(d.results.map(r => r.id))) }
   const delRow = async (r) => { if (!confirm(`Delete this registration?`)) return; setBusy(true); try { await api(`/admin/registrations/${r.id}/delete/`, { method: 'DELETE' }); load() } catch (e) { alert(e.data?.detail || e.message) } finally { setBusy(false) } }
