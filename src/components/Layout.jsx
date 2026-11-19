@@ -5,6 +5,7 @@ import { nav, company } from '../data'
 import { useAuth } from '../lib/auth'
 import { useContent } from '../lib/content'
 import { Avatar } from './ui'
+import Floaters from './Floaters'
 
 const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://academy.techiveitsolution.co.ke'
 
@@ -146,6 +147,7 @@ export default function Layout() {
       <Header />
       <main><Outlet /></main>
       <Footer />
+      <Floaters />
     </>
   )
 }
