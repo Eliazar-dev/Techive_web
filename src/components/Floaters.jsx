@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MessageCircle, Mail, Phone, X, Send, ArrowRight } from 'lucide-react'
 
@@ -6,9 +6,35 @@ const WHATSAPP = 'https://wa.me/254740492907?text=' + encodeURIComponent('Hi Tec
 const EMAIL = 'techiveitsolutions.com@gmail.com'
 const PHONE = '+254740492907'
 
-// WhatsApp bubble bottom-right, chat bubble bottom-left.
+// WhatsApp bubble bottom-right, Techive Buddy (Tidio) bubble bottom-left.
 export default function Floaters() {
   const [open, setOpen] = useState(false)
+
+  // Hide Tidio's own bubble once it loads — our branded bubble opens it instead.
+  useEffect(() => {
+    let tries = 0
+    const t = setInterval(() => {
+      const api = window.tidioChatApi
+      if (api && typeof api.hide === 'function') {
+        api.hide()
+        if (typeof api.on === 'function') api.on('close', () => api.hide())
+        clearInterval(t)
+      } else if (++tries > 60) clearInterval(t)
+    }, 500)
+    return () => clearInterval(t)
+  }, [])
+
+  const buddy = () => {
+    const api = window.tidioChatApi
+    if (api && typeof api.open === 'function') {
+      if (typeof api.show === 'function') api.show()
+      api.open()
+      setOpen(false)
+    } else {
+      setOpen(!open) // Tidio not loaded yet — show contact panel instead
+    }
+  }
+
   return (
     <>
       {/* WhatsApp — bottom right */}
@@ -22,8 +48,11 @@ export default function Floaters() {
         <MessageCircle size={26} />
       </a>
 
-      {/* Chat — bottom left */}
+      {/* Techive Buddy — bottom left */}
       <div className="fixed bottom-5 left-5 z-40 flex flex-col items-start">
+        {!open && (
+          <span className="mb-2 rounded-full bg-ink px-3 py-1 text-xs font-semibold text-white shadow-lg">Techive Buddy</span>
+        )}
         {open && (
           <div className="mb-3 w-72 animate-pop overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl">
             <div className="bg-ink px-4 py-3 text-white">
@@ -50,9 +79,8 @@ export default function Floaters() {
           </div>
         )}
         <button
-          onClick={() => setOpen(!open)}
-          aria-label={open ? 'Close chat' : 'Open chat'}
-          aria-expanded={open}
+          onClick={buddy}
+          aria-label="Chat with Techive Buddy"
           className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white shadow-2xl transition hover:scale-105"
         >
           {open ? <X size={24} /> : <Send size={22} className="-rotate-12" />}
