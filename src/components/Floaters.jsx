@@ -6,6 +6,30 @@ const WHATSAPP = 'https://wa.me/254740492907?text=' + encodeURIComponent('Hi Tec
 const EMAIL = 'techiveitsolutions.com@gmail.com'
 const PHONE = '+254740492907'
 
+// Little speech bubble that pops above a floater.
+function Pop({ text, tail = 'right', bg = 'bg-ink' }) {
+  return (
+    <div className={`pointer-events-none absolute bottom-full mb-3 animate-pop ${tail === 'right' ? 'right-0' : 'left-0'}`}>
+      <div className={`relative whitespace-nowrap rounded-2xl ${bg} px-4 py-2 text-xs font-bold text-white shadow-xl`}>
+        {text}
+        <span className={`absolute -bottom-1.5 h-3 w-3 rotate-45 ${bg} ${tail === 'right' ? 'right-6' : 'left-6'}`} />
+      </div>
+    </div>
+  )
+}
+
+// Round glowing button with ping ring + heartbeat.
+function GlowButton({ href, label, ring, children, onClick }) {
+  const cls = 'relative flex h-14 w-14 animate-heartbeat items-center justify-center rounded-full text-white shadow-2xl transition hover:scale-110'
+  const ringCls = `absolute inset-0 animate-ping rounded-full ${ring}`
+  const inner = <><span className={ringCls} aria-hidden /><span className="relative z-10">{children}</span></>
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className={`${cls} ${ring.replace('/40', '')}`}>{inner}</a>
+  ) : (
+    <button onClick={onClick} aria-label={label} className={`${cls} bg-ink`}>{inner}</button>
+  )
+}
+
 // WhatsApp bubble bottom-right, Techive Buddy (Tidio) bubble bottom-left.
 export default function Floaters() {
   const [open, setOpen] = useState(false)
@@ -38,21 +62,16 @@ export default function Floaters() {
   return (
     <>
       {/* WhatsApp — bottom right */}
-      <a
-        href={WHATSAPP}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
-        className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl transition hover:scale-105 hover:shadow-[#25D366]/40"
-      >
-        <MessageCircle size={26} />
-      </a>
+      <div className="fixed bottom-5 right-5 z-40">
+        <Pop text="Chat with us on WhatsApp!" tail="right" bg="bg-[#128C4B]" />
+        <GlowButton href={WHATSAPP} label="Chat on WhatsApp" ring="bg-[#25D366]/40">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg"><MessageCircle size={26} /></span>
+        </GlowButton>
+      </div>
 
       {/* Techive Buddy — bottom left */}
       <div className="fixed bottom-5 left-5 z-40 flex flex-col items-start">
-        {!open && (
-          <span className="mb-2 rounded-full bg-ink px-3 py-1 text-xs font-semibold text-white shadow-lg">Techive Buddy</span>
-        )}
+        {!open && <Pop text="Need help? Talk to Techive Buddy" tail="left" />}
         {open && (
           <div className="mb-3 w-72 animate-pop overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl">
             <div className="bg-ink px-4 py-3 text-white">
@@ -78,13 +97,9 @@ export default function Floaters() {
             </div>
           </div>
         )}
-        <button
-          onClick={buddy}
-          aria-label="Chat with Techive Buddy"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white shadow-2xl transition hover:scale-105"
-        >
-          {open ? <X size={24} /> : <Send size={22} className="-rotate-12" />}
-        </button>
+        <GlowButton onClick={buddy} label="Chat with Techive Buddy" ring="bg-white/40">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink shadow-lg">{open ? <X size={24} /> : <Send size={22} className="-rotate-12" />}</span>
+        </GlowButton>
       </div>
     </>
   )
