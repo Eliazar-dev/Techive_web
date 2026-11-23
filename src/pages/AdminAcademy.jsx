@@ -184,10 +184,11 @@ function Sessions() {
 
 function QuizAttempts() {
   const [page, setPage] = useState(1)
-  const [d] = useList('/admin/quiz-attempts/', page)
+  const [d, load] = useList('/admin/quiz-attempts/', page)
+  const del = async (q) => { if (confirm(`Delete this quiz attempt (${q.score}%)?`)) { await api(`/admin/quiz-attempts/${q.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   return (
     <Card title="Quiz Attempts">
-      <Table head={['Student', 'Course', 'Score', 'Result', 'Date']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+      <Table head={['Student', 'Course', 'Score', 'Result', 'Date', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.map(q => (
           <tr key={q.id} className="hover:bg-zinc-50">
             <td className="px-4 py-3"><p className="font-semibold">{q.name}</p><p className="text-xs text-zinc-500">{q.email}</p></td>
@@ -195,6 +196,7 @@ function QuizAttempts() {
             <td className="px-4 py-3">{q.score}%</td>
             <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${q.passed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{q.passed ? 'Passed' : 'Failed'}</span></td>
             <td className="px-4 py-3 text-zinc-500">{fmt(q.created_at)}</td>
+            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(q)} className="text-red-600"><Trash2 size={16} /></button></td>
           </tr>
         ))}
       </Table>

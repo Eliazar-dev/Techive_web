@@ -257,6 +257,50 @@ function ModuleCard({ module, courseId, onRefresh }) {
   )
 }
 
+// Project submissions for the selected course
+function ProjectReview({ courseId }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [fb, setFb] = useState({})
+  const [busy, setBusy] = useState(0)
+
+  const load = () => api(`/admin/projects/?course=${courseId}`).then((r) => setItems(Array.isArray(r) ? r : r.results || [])).catch(() => setItems([])).finally(() => setLoading(false))
+  useEffect(() => { setLoading(true); load() }, [courseId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setStatus = async (p, status) => {
+    setBusy(p.id)
+    try {
+      await api(`/admin/projects/${p.id}/`, { method: 'PATCH', body: { status, feedback: fb[p.id] ?? p.feedback ?? '' } })
+      await load()
+    } catch (e) { alert(e.message) } finally { setBusy(0) }
+  }
+
+  const badge = { pending: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', changes: 'bg-sky-100 text-sky-700' }
+  return (
+    <Card title="Project Submissions">
+      <Table head={['Student', 'Link', 'Notes', 'Status', 'Review']} loading={loading} empty={!loading && items.length === 0}>
+        {items.map((p) => (
+          <tr key={p.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3"><p className="font-semibold">{p.name || p.email}</p><p className="text-xs text-zinc-500">{p.email}</p></td>
+            <td className="max-w-[180px] truncate px-4 py-3">{p.link ? <a href={p.link} target="_blank" rel="noreferrer" className="text-sm font-semibold text-brand-cyan underline">Open</a> : '—'}</td>
+            <td className="max-w-[220px] truncate px-4 py-3 text-sm text-zinc-600">{p.notes || '—'}</td>
+            <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge[p.status] || badge.pending}`}>{p.status}</span></td>
+            <td className="px-4 py-3">
+              <div className="flex flex-col gap-2">
+                <input className="input !w-56 !py-1.5 text-xs" placeholder="Feedback to student (optional)" value={fb[p.id] ?? p.feedback ?? ''} onChange={(e) => setFb({ ...fb, [p.id]: e.target.value })} />
+                <div className="flex gap-2">
+                  <button disabled={busy === p.id} onClick={() => setStatus(p, 'approved')} className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50">Approve</button>
+                  <button disabled={busy === p.id} onClick={() => setStatus(p, 'changes')} className="rounded-full bg-sky-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50">Request changes</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </Table>
+    </Card>
+  )
+}
+
 // Main content editor
 export default function AdminContent() {
   const [courses, setCourses] = useState([])
@@ -344,6 +388,8 @@ export default function AdminContent() {
               ))}
             </Table>
           </Card>
+
+          <ProjectReview courseId={selectedCourse.id} />
         </>
       )}
     </div>
