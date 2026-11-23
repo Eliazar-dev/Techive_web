@@ -94,14 +94,29 @@ function Students() {
   )
 }
 
+const PAY_STATUS = { pending: 'Pending', success: 'Paid', failed: 'Failed' }
+const PAY_STATUS_CLS = { pending: 'bg-amber-100 text-amber-700', success: 'bg-emerald-100 text-emerald-700', failed: 'bg-red-100 text-red-700' }
+
 function Payments() {
   const [page, setPage] = useState(1)
-  const [d] = useList('/admin/payments/', page)
+  const [status, setStatus] = useState(() => localStorage.getItem('adminPaymentsStatus') || '')
+  const [d, load] = useList('/admin/payments/', page, status ? `&status=${status}` : '')
+  useEffect(() => { localStorage.setItem('adminPaymentsStatus', status); setPage(1) }, [status])
+  const clear = () => { setStatus(''); setPage(1) }
+  const del = async (p) => { if (confirm(`Delete payment ${p.reference} (KSh ${p.amount}, ${p.status})? This cannot be undone.`)) { await api(`/admin/payments/${p.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const downloadCSV = async () => { const t = api.tokens.get(); const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/payments/export/`, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url) }
   return (
-    <Card title="Payments" extra={<button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button>}>
-      <Table head={['Date', 'Student', 'Course', 'Purpose', 'Amount', 'Currency', 'Status', 'Reference']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
-        {d.results.map(p => <tr key={p.id} className="hover:bg-zinc-50"><td className="px-4 py-3 text-zinc-500">{fmt(p.created_at)}</td><td className="px-4 py-3 font-medium">{p.email}</td><td className="px-4 py-3">{p.course_name}</td><td className="px-4 py-3">{p.purpose}</td><td className="px-4 py-3">KSh {p.amount.toLocaleString()}</td><td className="px-4 py-3">{p.currency}</td><td className="px-4 py-3">{p.status}</td><td className="px-4 py-3 text-zinc-500">{p.reference}</td></tr>)}
+    <Card title="Payments" extra={
+      <div className="flex items-center gap-2">
+        <select className="input !w-auto !py-1.5 text-sm" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
+          <option value="">All statuses</option>
+          {Object.entries(PAY_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        {status && <button onClick={clear} className="btn-light !px-3 !py-1.5 text-sm">Clear</button>}
+        <button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button>
+      </div>}>
+      <Table head={['Date', 'Student', 'Course', 'Purpose', 'Amount', 'Currency', 'Status', 'Reference', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
+        {d.results.map(p => <tr key={p.id} className="hover:bg-zinc-50"><td className="px-4 py-3 text-zinc-500">{fmt(p.created_at)}</td><td className="px-4 py-3 font-medium">{p.email}</td><td className="px-4 py-3">{p.course_name}</td><td className="px-4 py-3">{p.purpose}</td><td className="px-4 py-3">KSh {p.amount.toLocaleString()}</td><td className="px-4 py-3">{p.currency}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${PAY_STATUS_CLS[p.status] || ''}`}>{PAY_STATUS[p.status] || p.status}</span></td><td className="px-4 py-3 text-zinc-500">{p.reference}</td><td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(p)} className="text-red-600"><Trash2 size={16} /></button></td></tr>)}
       </Table>
       <Pager page={page} setPage={setPage} count={d.count} />
     </Card>
