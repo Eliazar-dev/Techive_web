@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { api } from '../lib/api'
-import { Card, Table } from './adminKit'
+import { Card, Table, errText } from './adminKit'
 
 const LESSON_KINDS = { video: 'Video', text: 'Reading', file: 'File' }
 
@@ -22,7 +22,7 @@ function ModuleForm({ module, courseId, onSaved, onCancel }) {
       })
       onSaved()
     } catch (x) {
-      setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message)
+      setErr(errText(x))
       setBusy(false)
     }
   }
@@ -68,7 +68,7 @@ function LessonForm({ lesson, moduleId, onSaved, onCancel }) {
       })
       onSaved()
     } catch (x) {
-      setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message)
+      setErr(errText(x))
       setBusy(false)
     }
   }
@@ -136,7 +136,7 @@ function QuestionForm({ question, courseId, onSaved, onCancel }) {
       })
       onSaved()
     } catch (x) {
-      setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message)
+      setErr(errText(x))
       setBusy(false)
     }
   }

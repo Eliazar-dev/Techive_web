@@ -6,6 +6,19 @@ export const STATUSES = { new: 'New', contacted: 'Contacted', in_progress: 'In p
 export const pill = { new: 'bg-blue-100 text-blue-700', contacted: 'bg-amber-100 text-amber-700', in_progress: 'bg-violet-100 text-violet-700', won: 'bg-emerald-100 text-emerald-700', lost: 'bg-zinc-200 text-zinc-600' }
 export const fmt = (d) => (d ? new Date(d).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' }) : '—')
 
+// Turn a DRF error response into readable "field: message" text (handles nested objects/lists).
+export const errText = (x) => {
+  const d = x?.data
+  if (!d || typeof d !== 'object') return x?.message || 'Something went wrong.'
+  const flat = (o, prefix = '') => Object.entries(o).flatMap(([k, v]) => {
+    const key = prefix ? `${prefix}.${k}` : k
+    if (Array.isArray(v)) return v.map((e) => `${key}: ${e && typeof e === 'object' ? JSON.stringify(e) : e}`)
+    if (v && typeof v === 'object') return flat(v, key)
+    return [`${key}: ${v}`]
+  })
+  return flat(d).join(' ') || x?.message || 'Something went wrong.'
+}
+
 // Fetch one page of a paginated list endpoint
 export function useList(path, page, query = '') {
   const [d, setD] = useState({ results: [], count: 0, loading: true, error: '' })

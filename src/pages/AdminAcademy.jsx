@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Download } from 'lucide-react'
 import { api } from '../lib/api'
-import { fmt, useList, Pager, Table, Card } from './adminKit'
+import { fmt, useList, Pager, Table, Card, errText } from './adminKit'
 
 const MODES = { online: 'Online', physical: 'Physical', hybrid: 'Hybrid' }
 const BLANK = { name: '', slug: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', certificate_fee: '', referral_reward: '', quiz_pass_mark: '', project_brief: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0, next_course: '' }
@@ -15,7 +15,7 @@ function CourseForm({ course, onSaved, onCancel }) {
     e.preventDefault(); setBusy(true); setErr('')
     const body = { ...f, price: f.price === '' ? null : Number(f.price), certificate_fee: f.certificate_fee === '' ? null : Number(f.certificate_fee), referral_reward: f.referral_reward === '' ? null : Number(f.referral_reward), quiz_pass_mark: f.quiz_pass_mark === '' ? null : Number(f.quiz_pass_mark), order: Number(f.order) || 0, next_course: f.next_course || null }
     try { await api(course?.id ? `/admin/courses/${course.id}/` : '/admin/courses/', { method: course?.id ? 'PATCH' : 'POST', body }); onSaved() }
-    catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message); setBusy(false) }
+    catch (x) { setErr(errText(x)); setBusy(false) }
   }
   const L = 'block text-sm font-medium'
   return (
@@ -115,7 +115,7 @@ function Sessions() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   useEffect(() => { api('/admin/courses/').then((r) => setCourses(Array.isArray(r) ? r : r.results || [])).catch(() => setCourses([])) }, [])
-  const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: { ...f, starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null } }); setShowForm(false); setF({}); load() } catch (x) { setErr(x.data ? Object.values(x.data).flat().join(' ') : x.message); setBusy(false) } }
+  const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: { ...f, starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null } }); setShowForm(false); setF({}); load() } catch (x) { setErr(errText(x)); setBusy(false) } }
   const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
   return (
