@@ -125,7 +125,8 @@ function Payments() {
 
 function Sessions() {
   const [page, setPage] = useState(1)
-  const [d, load] = useList('/admin/sessions/', page)
+  const [showArchived, setShowArchived] = useState(false)
+  const [d, load] = useList('/admin/sessions/', page, showArchived ? '&archived=1' : '')
   const [courses, setCourses] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [f, setF] = useState({})
@@ -135,7 +136,7 @@ function Sessions() {
   const [att, setAtt] = useState({})
   useEffect(() => { api('/admin/courses/').then((r) => setCourses(Array.isArray(r) ? r : r.results || [])).catch(() => setCourses([])) }, [])
   const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: { ...f, starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null } }); setShowForm(false); setF({}); load() } catch (x) { setErr(errText(x)); setBusy(false) } }
-  const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
+  const del = async (s) => { if (confirm(`Archive session "${s.title}"? It will be hidden from this list but attendance records are kept.`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
   const toggleAtt = (id) => {
     if (openAtt === id) { setOpenAtt(null); return }
@@ -147,7 +148,7 @@ function Sessions() {
   }
   const verify = async (a) => { await api(`/admin/attendance/${a.id}/`, { method: 'PATCH', body: { verified: true } }).catch((e) => alert(e.message)); setAtt((x) => ({ ...x, [openAtt]: { ...x[openAtt], items: x[openAtt].items.map((i) => i.id === a.id ? { ...i, verified: true } : i) } })) }
   return (
-    <Card title="Live Sessions" extra={<button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button>}>
+    <Card title="Live Sessions" extra={<div className="flex items-center gap-3"><label className="flex items-center gap-1.5 text-sm text-zinc-600"><input type="checkbox" checked={showArchived} onChange={(e) => { setShowArchived(e.target.checked); setPage(1) }} className="h-4 w-4 accent-ink" />Archived</label><button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button></div>}>
       {showForm && (
         <div className="border-b border-zinc-200 bg-zinc-50 p-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -165,12 +166,15 @@ function Sessions() {
         {d.results.map(s => (
           <Fragment key={s.id}>
             <tr className="hover:bg-zinc-50">
-              <td className="px-4 py-3 font-medium">{s.title}</td>
+              <td className="px-4 py-3 font-medium">{s.title}{s.archived && <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] uppercase">Archived</span>}</td>
               <td className="px-4 py-3">{s.course_name}</td>
               <td className="px-4 py-3 text-zinc-500">{fmt(s.starts_at)}</td>
               <td className="px-4 py-3">
-                {s.attendance_count} checked in
-                {s.attendance_count > 0 && <button onClick={() => toggleAtt(s.id)} className="ml-2 text-sm font-semibold text-brand-cyan underline">{openAtt === s.id ? 'Hide' : 'View'}</button>}
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-200" title={`${s.verified_count} verified`}><div className={`h-full rounded-full ${s.attendance_pct >= 80 ? 'bg-emerald-500' : s.attendance_pct >= 50 ? 'bg-amber-400' : 'bg-red-400'}`} style={{ width: `${s.attendance_pct}%` }} /></div>
+                  <span className="whitespace-nowrap text-xs text-zinc-500">{s.verified_count} verified · {s.attendance_count} checked in · {s.attendance_pct}%</span>
+                </div>
+                {s.attendance_count > 0 && <button onClick={() => toggleAtt(s.id)} className="mt-1 text-sm font-semibold text-brand-cyan underline">{openAtt === s.id ? 'Hide' : 'View'}</button>}
               </td>
               <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
               <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button></td>
