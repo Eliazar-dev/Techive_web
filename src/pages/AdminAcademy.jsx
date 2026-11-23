@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { Plus, Trash2, Download } from 'lucide-react'
 import { api } from '../lib/api'
 import { fmt, useList, Pager, Table, Card, errText } from './adminKit'
@@ -114,10 +114,21 @@ function Sessions() {
   const [f, setF] = useState({})
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [openAtt, setOpenAtt] = useState(null)
+  const [att, setAtt] = useState({})
   useEffect(() => { api('/admin/courses/').then((r) => setCourses(Array.isArray(r) ? r : r.results || [])).catch(() => setCourses([])) }, [])
   const add = async () => { setBusy(true); setErr(''); try { await api('/admin/sessions/', { method: 'POST', body: { ...f, starts_at: f.starts_at ? new Date(f.starts_at).toISOString() : null } }); setShowForm(false); setF({}); load() } catch (x) { setErr(errText(x)); setBusy(false) } }
   const del = async (s) => { if (confirm(`Delete session "${s.title}"?`)) { await api(`/admin/sessions/${s.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   const copyLink = (url) => { navigator.clipboard.writeText(url); alert('Check-in link copied!') }
+  const toggleAtt = (id) => {
+    if (openAtt === id) { setOpenAtt(null); return }
+    setOpenAtt(id)
+    if (!att[id]) {
+      setAtt((a) => ({ ...a, [id]: { loading: true, items: [], error: '' } }))
+      api(`/admin/attendance/?session=${id}`).then((r) => setAtt((a) => ({ ...a, [id]: { loading: false, items: Array.isArray(r) ? r : r.results || [], error: '' } }))).catch((e) => setAtt((a) => ({ ...a, [id]: { loading: false, items: [], error: errText(e) } })))
+    }
+  }
+  const verify = async (a) => { await api(`/admin/attendance/${a.id}/`, { method: 'PATCH', body: { verified: true } }).catch((e) => alert(e.message)); setAtt((x) => ({ ...x, [openAtt]: { ...x[openAtt], items: x[openAtt].items.map((i) => i.id === a.id ? { ...i, verified: true } : i) } })) }
   return (
     <Card title="Live Sessions" extra={<button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button>}>
       {showForm && (
@@ -135,14 +146,35 @@ function Sessions() {
       )}
       <Table head={['Session', 'Course', 'Date', 'Attendance', 'Check-in Link', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.map(s => (
-          <tr key={s.id} className="hover:bg-zinc-50">
-            <td className="px-4 py-3 font-medium">{s.title}</td>
-            <td className="px-4 py-3">{s.course_name}</td>
-            <td className="px-4 py-3 text-zinc-500">{fmt(s.starts_at)}</td>
-            <td className="px-4 py-3">{s.attendance_count} checked in</td>
-            <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
-            <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button></td>
-          </tr>
+          <Fragment key={s.id}>
+            <tr className="hover:bg-zinc-50">
+              <td className="px-4 py-3 font-medium">{s.title}</td>
+              <td className="px-4 py-3">{s.course_name}</td>
+              <td className="px-4 py-3 text-zinc-500">{fmt(s.starts_at)}</td>
+              <td className="px-4 py-3">
+                {s.attendance_count} checked in
+                {s.attendance_count > 0 && <button onClick={() => toggleAtt(s.id)} className="ml-2 text-sm font-semibold text-brand-cyan underline">{openAtt === s.id ? 'Hide' : 'View'}</button>}
+              </td>
+              <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
+              <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button></td>
+            </tr>
+            {openAtt === s.id && (
+              <tr><td colSpan={6} className="bg-zinc-50 px-4 py-3">
+                {att[s.id]?.loading && <p className="text-sm text-zinc-500">Loading…</p>}
+                {att[s.id]?.error && <p className="text-sm text-red-600">{att[s.id].error}</p>}
+                {att[s.id] && !att[s.id].loading && !att[s.id].error && (att[s.id].items.length === 0
+                  ? <p className="text-sm text-zinc-500">No one has checked in yet.</p>
+                  : <ul className="divide-y divide-zinc-200 text-sm">{att[s.id].items.map(a => (
+                      <li key={a.id} className="flex items-center justify-between py-2">
+                        <span><span className="font-medium">{a.name || a.email}</span> <span className="text-zinc-500">{a.email} · {fmt(a.checked_in_at)}</span></span>
+                        {a.verified
+                          ? <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">Verified</span>
+                          : <button onClick={() => verify(a)} className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700 hover:bg-amber-200">Verify</button>}
+                      </li>
+                    ))}</ul>)}
+              </td></tr>
+            )}
+          </Fragment>
         ))}
       </Table>
       <Pager page={page} setPage={setPage} count={d.count} />
