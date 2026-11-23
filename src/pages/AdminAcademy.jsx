@@ -4,16 +4,16 @@ import { api } from '../lib/api'
 import { fmt, useList, Pager, Table, Card, errText } from './adminKit'
 
 const MODES = { online: 'Online', physical: 'Physical', hybrid: 'Hybrid' }
-const BLANK = { name: '', slug: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', certificate_fee: '', referral_reward: '', quiz_pass_mark: '', project_brief: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0, next_course: '' }
+const BLANK = { name: '', slug: '', track: 'Building with AI', description: '', duration: '', mode: 'online', price: '', certificate_fee: '', referral_reward: '', quiz_pass_mark: '', project_title: '', project_brief: '', project_requirements: '', tutor: '', rules: '', payment_plan: '', status: 'coming_soon', is_published: true, order: 0, next_course: '' }
 
 function CourseForm({ course, onSaved, onCancel }) {
-  const [f, setF] = useState({ ...BLANK, ...course, price: course?.price ?? '' })
+  const [f, setF] = useState({ ...BLANK, ...course, price: course?.price ?? '', project_requirements: Array.isArray(course?.project_requirements) ? course.project_requirements.join('\n') : (course?.project_requirements || '') })
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
   async function save(e) {
     e.preventDefault(); setBusy(true); setErr('')
-    const body = { ...f, price: f.price === '' ? null : Number(f.price), certificate_fee: f.certificate_fee === '' ? null : Number(f.certificate_fee), referral_reward: f.referral_reward === '' ? null : Number(f.referral_reward), quiz_pass_mark: f.quiz_pass_mark === '' ? null : Number(f.quiz_pass_mark), order: Number(f.order) || 0, next_course: f.next_course || null }
+    const body = { ...f, price: f.price === '' ? null : Number(f.price), certificate_fee: f.certificate_fee === '' ? null : Number(f.certificate_fee), referral_reward: f.referral_reward === '' ? null : Number(f.referral_reward), quiz_pass_mark: f.quiz_pass_mark === '' ? null : Number(f.quiz_pass_mark), order: Number(f.order) || 0, next_course: f.next_course || null, project_requirements: (f.project_requirements || '').split('\n').map((s) => s.trim()).filter(Boolean) }
     try { await api(course?.id ? `/admin/courses/${course.id}/` : '/admin/courses/', { method: course?.id ? 'PATCH' : 'POST', body }); onSaved() }
     catch (x) { setErr(errText(x)); setBusy(false) }
   }
@@ -30,7 +30,9 @@ function CourseForm({ course, onSaved, onCancel }) {
       <label className={L}>Referral reward (KSh)<input type="number" min="0" className="input mt-1" value={f.referral_reward} onChange={set('referral_reward')} /></label>
       <label className={L}>Quiz pass mark (%)<input type="number" min="0" max="100" className="input mt-1" value={f.quiz_pass_mark} onChange={set('quiz_pass_mark')} /></label>
       <label className={L}>Next course (optional)<input className="input mt-1" value={f.next_course} onChange={set('next_course')} placeholder="Course slug" /></label>
-      <label className={`${L} sm:col-span-2`}>Project brief (shown after course completion)<textarea rows={3} className="input mt-1" value={f.project_brief} onChange={set('project_brief')} /></label>
+      <label className={L}>Project title<input className="input mt-1" value={f.project_title} onChange={set('project_title')} placeholder="e.g. Build a Python CLI program" /></label>
+      <label className={`${L} sm:col-span-2`}>Project instructions (shown after course completion)<textarea rows={4} className="input mt-1" value={f.project_brief} onChange={set('project_brief')} placeholder="Describe what students should build, ideas to choose from, and how to submit." /></label>
+      <label className={`${L} sm:col-span-2`}>Project requirements checklist (one per line)<textarea rows={4} className="input mt-1" value={f.project_requirements} onChange={set('project_requirements')} placeholder={'Runs without errors\nIncludes comments\nHandles wrong input'} /></label>
       <label className={`${L} sm:col-span-2`}>Slug (for URL, auto-generated if blank)<input className="input mt-1" value={f.slug} onChange={set('slug')} /></label>
       <label className={L}>Tutor<input className="input mt-1" value={f.tutor} onChange={set('tutor')} /></label>
       <label className={`${L} sm:col-span-2`}>Course rules (shown after registering)<textarea rows={3} className="input mt-1" value={f.rules} onChange={set('rules')} /></label>
