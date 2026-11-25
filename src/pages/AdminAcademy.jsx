@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from 'react'
 import { Plus, Trash2, Download } from 'lucide-react'
-import { api } from '../lib/api'
+import { api, tokens } from '../lib/api'
 import { fmt, useList, Pager, Table, Card, errText } from './adminKit'
 
 const MODES = { online: 'Online', physical: 'Physical', hybrid: 'Hybrid' }
@@ -106,7 +106,7 @@ function Payments() {
   useEffect(() => { localStorage.setItem('adminPaymentsStatus', status); setPage(1) }, [status])
   const clear = () => { setStatus(''); setPage(1) }
   const del = async (p) => { if (confirm(`Delete payment ${p.reference} (KSh ${p.amount}, ${p.status})? This cannot be undone.`)) { await api(`/admin/payments/${p.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
-  const downloadCSV = async () => { const t = api.tokens.get(); const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/payments/export/`, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url) }
+  const downloadCSV = async () => { const t = tokens.get(); const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/payments/export/`, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url) }
   return (
     <Card title="Payments" extra={
       <div className="flex items-center gap-2">

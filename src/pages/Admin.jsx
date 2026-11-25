@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { FileText, Users, GraduationCap, Inbox, Eye, BookOpen, Copy, Trash2, Download, Check, X } from 'lucide-react'
 import { useSEO } from '../components/ui'
-import { api } from '../lib/api'
+import { api, tokens } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 import { STATUSES, pill, fmt, useList, Pager, Table } from './adminKit'
@@ -141,7 +141,7 @@ function UsersTab() {
     finally { setBusy(false) }
   }
   const downloadCSV = async () => {
-    const t = api.tokens.get()
+    const t = tokens.get()
     const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/export/`, { headers: { Authorization: `Bearer ${t.access}` } })
     if (!res.ok) { alert('Download failed'); return }
     const blob = await res.blob()
