@@ -147,6 +147,12 @@ function Sessions() {
     }
   }
   const verify = async (a) => { await api(`/admin/attendance/${a.id}/`, { method: 'PATCH', body: { verified: true } }).catch((e) => alert(e.message)); setAtt((x) => ({ ...x, [openAtt]: { ...x[openAtt], items: x[openAtt].items.map((i) => i.id === a.id ? { ...i, verified: true } : i) } })) }
+  const uploadNotes = async (s, file) => {
+    if (!file) return
+    const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file) })
+    try { await api(`/admin/sessions/${s.id}/notes-pdf/`, { method: 'POST', body: { name: file.name, data } }); load() } catch (e) { alert(e.message) }
+  }
+  const delNotes = async (s) => { if (confirm('Remove the notes PDF for this session?')) { await api(`/admin/sessions/${s.id}/notes-pdf/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
   return (
     <Card title="Live Sessions" extra={<div className="flex items-center gap-3"><label className="flex items-center gap-1.5 text-sm text-zinc-600"><input type="checkbox" checked={showArchived} onChange={(e) => { setShowArchived(e.target.checked); setPage(1) }} className="h-4 w-4 accent-ink" />Archived</label><button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button></div>}>
       {showForm && (
@@ -177,7 +183,14 @@ function Sessions() {
                 {s.attendance_count > 0 && <button onClick={() => toggleAtt(s.id)} className="mt-1 text-sm font-semibold text-brand-cyan underline">{openAtt === s.id ? 'Hide' : 'View'}</button>}
               </td>
               <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
-              <td className="whitespace-nowrap px-4 py-3 text-right"><button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button></td>
+              <td className="whitespace-nowrap px-4 py-3">
+                <div className="flex items-center justify-end gap-2">
+                  {s.has_notes_pdf
+                    ? <button onClick={() => delNotes(s)} className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200" title="Notes PDF uploaded — click to remove">PDF ✓</button>
+                    : <label className="cursor-pointer rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-bold text-zinc-600 hover:bg-zinc-200">+ PDF<input type="file" accept="application/pdf" className="hidden" onChange={(e) => uploadNotes(s, e.target.files[0])} /></label>}
+                  <button onClick={() => del(s)} className="text-red-600"><Trash2 size={16} /></button>
+                </div>
+              </td>
             </tr>
             {openAtt === s.id && (
               <tr><td colSpan={6} className="bg-zinc-50 px-4 py-3">
