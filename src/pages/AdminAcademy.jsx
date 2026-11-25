@@ -224,8 +224,9 @@ function QuizAttempts() {
   const [page, setPage] = useState(1)
   const [d, load] = useList('/admin/quiz-attempts/', page)
   const del = async (q) => { if (confirm(`Delete this quiz attempt (${q.score}%)?`)) { await api(`/admin/quiz-attempts/${q.id}/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
+  const downloadCSV = async () => { const t = tokens.get(); const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/quiz-attempts/export/`, { headers: { Authorization: `Bearer ${t.access}` } }); if (!res.ok) { alert('Download failed'); return }; const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `quiz-attempts-${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url) }
   return (
-    <Card title="Quiz Attempts">
+    <Card title="Quiz Attempts" extra={<button onClick={downloadCSV} className="btn-light !py-2"><Download size={16} className="mr-2" />CSV</button>}>
       <Table head={['Student', 'Course', 'Score', 'Result', 'Date', '']} loading={d.loading} error={d.error} empty={!d.loading && !d.error && d.results.length === 0}>
         {d.results.map(q => (
           <tr key={q.id} className="hover:bg-zinc-50">
