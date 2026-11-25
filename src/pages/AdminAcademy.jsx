@@ -153,6 +153,7 @@ function Sessions() {
     try { await api(`/admin/sessions/${s.id}/notes-pdf/`, { method: 'POST', body: { name: file.name, data } }); load() } catch (e) { alert(e.message) }
   }
   const delNotes = async (s) => { if (confirm('Remove the notes PDF for this session?')) { await api(`/admin/sessions/${s.id}/notes-pdf/`, { method: 'DELETE' }).catch((e) => alert(e.message)); load() } }
+  const toggleHide = async (s) => { await api(`/admin/sessions/${s.id}/`, { method: 'PATCH', body: { hidden: !s.hidden } }).catch((e) => alert(e.message)); load() }
   return (
     <Card title="Live Sessions" extra={<div className="flex items-center gap-3"><label className="flex items-center gap-1.5 text-sm text-zinc-600"><input type="checkbox" checked={showArchived} onChange={(e) => { setShowArchived(e.target.checked); setPage(1) }} className="h-4 w-4 accent-ink" />Archived</label><button onClick={() => setShowForm(!showForm)} className="btn-dark !px-4 !py-2"><Plus size={16} />New session</button></div>}>
       {showForm && (
@@ -172,7 +173,7 @@ function Sessions() {
         {d.results.map(s => (
           <Fragment key={s.id}>
             <tr className="hover:bg-zinc-50">
-              <td className="px-4 py-3 font-medium">{s.title}{s.archived && <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] uppercase">Archived</span>}</td>
+              <td className="px-4 py-3 font-medium">{s.title}{s.archived && <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] uppercase">Archived</span>}{s.hidden && <span className="ml-2 rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-violet-700">Hidden</span>}</td>
               <td className="px-4 py-3">{s.course_name}</td>
               <td className="px-4 py-3 text-zinc-500">{fmt(s.starts_at)}</td>
               <td className="px-4 py-3">
@@ -185,6 +186,7 @@ function Sessions() {
               <td className="px-4 py-3"><button onClick={() => copyLink(s.checkin_url)} className="text-sm font-semibold underline">Copy link</button></td>
               <td className="whitespace-nowrap px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
+                  <button onClick={() => toggleHide(s)} className={`rounded-full px-2.5 py-1 text-xs font-bold ${s.hidden ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`} title={s.hidden ? 'Hidden from students — click to show' : 'Visible to students — click to hide'}>{s.hidden ? 'Show' : 'Hide'}</button>
                   {s.has_notes_pdf
                     ? <button onClick={() => delNotes(s)} className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200" title="Notes PDF uploaded — click to remove">PDF ✓</button>
                     : <label className="cursor-pointer rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-bold text-zinc-600 hover:bg-zinc-200">+ PDF<input type="file" accept="application/pdf" className="hidden" onChange={(e) => uploadNotes(s, e.target.files[0])} /></label>}
