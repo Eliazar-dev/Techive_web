@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowLeft, GraduationCap, X } from 'lucide-react'
 import { useSEO } from '../components/ui'
-import { GoogleButton, MicrosoftButton } from '../components/SocialButtons'
+import { GoogleButton } from '../components/SocialButtons'
 import { AUTH_COURSES } from '../data'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -165,10 +165,6 @@ function SignupFace({ academy, prefill, onDone, onLogin }) {
     run(async () => { await post('/auth/register/', f); setPurpose('signup'); setStage('otp') })
   }
   const google = (credential) => run(async () => onDone(await post('/auth/google/', { credential, mode: 'signup' }), true))
-  const microsoft = (id_token) => run(async () => {
-    const r = await post('/auth/microsoft/', { id_token, mode: 'signup' })
-    setF((x) => ({ ...x, email: r.email })); setPurpose(r.purpose); setStage('otp')
-  })
 
   if (stage === 'otp') return <OtpStep email={f.email} purpose={purpose} remember={remember} onDone={(d) => onDone(d, remember)} onBack={() => setStage('form')} setNote={setNote} />
 
@@ -201,7 +197,6 @@ function SignupFace({ academy, prefill, onDone, onLogin }) {
       <Divider>or sign up with</Divider>
       <div className="grid gap-3 sm:grid-cols-2">
         <GoogleButton label="Google" onCredential={google} onError={setErr} />
-        <MicrosoftButton label="Microsoft" onToken={microsoft} onError={setErr} />
       </div>
       <p className="mt-5 text-center text-sm text-white/80">Already have an account? <button type="button" onClick={onLogin} className="font-bold text-white underline underline-offset-2">Login</button></p>
     </div>
