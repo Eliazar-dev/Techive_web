@@ -195,7 +195,7 @@ function SignupFace({ academy, prefill, onDone, onLogin }) {
         <button disabled={busy} className="btn-shine">{busy ? 'Please wait…' : 'Create account'}</button>
       </form>
       <Divider>or sign up with</Divider>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="mx-auto grid max-w-sm gap-3">
         <GoogleButton label="Google" onCredential={google} onError={setErr} />
       </div>
       <p className="mt-5 text-center text-sm text-white/80">Already have an account? <button type="button" onClick={onLogin} className="font-bold text-white underline underline-offset-2">Login</button></p>
